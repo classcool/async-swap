@@ -16,6 +16,8 @@ contract CounterHook is BaseHook {
   using CurrencyLibrary for Currency;
   using BalanceDeltaLibrary for BalanceDelta;
 
+  event BeforeInitialize();
+  event AfterInitialize();
   event BeforeAddLiquidity();
   event BeforeRemoveLiquidity();
   event AfterAddLiquidity();
@@ -31,8 +33,8 @@ contract CounterHook is BaseHook {
   /// @inheritdoc BaseHook
   function getHookPermissions() public pure override returns (Hooks.Permissions memory) {
     return Hooks.Permissions({
-      beforeInitialize: false,
-      afterInitialize: false,
+      beforeInitialize: true,
+      afterInitialize: true,
       beforeAddLiquidity: true,
       beforeRemoveLiquidity: true,
       afterAddLiquidity: true,
@@ -48,12 +50,37 @@ contract CounterHook is BaseHook {
     });
   }
 
+  function _beforeInitialize(address sender, PoolKey calldata key, uint160 sqrtPriceX96)
+    internal
+    override
+    returns (bytes4)
+  {
+    sender;
+    key;
+    sqrtPriceX96;
+    emit BeforeInitialize();
+    return (this.beforeInitialize.selector);
+  }
+
+  function _afterInitialize(address sender, PoolKey calldata key, uint160 sqrtPriceX96, int24 tick)
+    internal
+    override
+    returns (bytes4)
+  {
+    sender;
+    key;
+    sqrtPriceX96;
+    tick;
+    emit AfterInitialize();
+    return (this.afterInitialize.selector);
+  }
+
   function _beforeSwap(
     address sender,
     PoolKey calldata key,
     IPoolManager.SwapParams calldata swapParams,
     bytes calldata hookData
-  ) internal override returns (bytes4, BeforeSwapDelta, uint24) {
+  ) internal override returns (bytes4, BeforeSwapDelta, uint24 fee) {
     emit BeforeSwap();
     sender;
     key;
