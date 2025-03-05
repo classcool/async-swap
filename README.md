@@ -1,7 +1,6 @@
 # hook-starter
 
-Frontend + Indexer + Foundry monorepo for end-to-end development of Uniswap V4 hooks. 
-
+Frontend + Indexer + Foundry monorepo for end-to-end development of Uniswap V4 hooks.
 
 ## Install
 
@@ -67,12 +66,12 @@ bun run dev
 
 Got to [http://localhost:42069](http://localhost:42069)
 
-## Frontend `packages/app`
+## Frontend `packages/frontend`
 
 Go to app
 
 ```sh
-cd packages/app
+cd packages/frontend
 ```
 
 Start frontend
