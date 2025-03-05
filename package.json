@@ -1,0 +1,16 @@
+{
+  "name": "hook-starter",
+  "module": "index.ts",
+  "workspaces": [
+    "packages/app",
+    "packages/indexer"
+  ],
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "type": "module"
+}
+
