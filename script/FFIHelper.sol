@@ -10,7 +10,7 @@ contract FFIHelper is Script {
 
   using stdJson for string;
 
-  function _getDeployedPoolManager() internal view returns (IPoolManager ) {
+  function _getDeployedPoolManager() internal view returns (IPoolManager) {
     string memory root = vm.projectRoot();
     string memory path = string.concat(root, "/broadcast/00_DeployPoolManager.s.sol/31337/run-latest.json");
     string memory json = vm.readFile(path);
