@@ -71,10 +71,13 @@ ponder.on("PoolManager:Initialize", async ({ event, context }) => {
 		})
 		.onConflictDoNothing();
 
-	await context.db.insert(schema.hook).values({
-		hookAddress: event.args.hooks,
-		chainId: context.network.chainId,
-	}).onConflictDoNothing();
+	await context.db
+		.insert(schema.hook)
+		.values({
+			hookAddress: event.args.hooks,
+			chainId: context.network.chainId,
+		})
+		.onConflictDoNothing();
 
 	await context.db
 		.insert(schema.pool)
@@ -101,7 +104,9 @@ ponder.on("PoolManager:Transfer", async ({ event, context }) => {
 			from: event.args.from,
 			to: event.args.to,
 			erc6909Id:
-				toHex(event.args.id) === "0x00" ? "0x0000000000000000000000000000000000000000" : toHex(event.args.id),
+				toHex(event.args.id) === "0x00"
+					? "0x0000000000000000000000000000000000000000"
+					: toHex(event.args.id),
 			amount: event.args.amount,
 			chainId: context.network.chainId,
 		})
