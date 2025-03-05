@@ -64,7 +64,7 @@ Start local ponder indexer
 bun run dev
 ```
 
-Got to [http://localhost:42069](http://localhost:42069)
+Go to [http://localhost:42069](http://localhost:42069)
 
 ## Frontend `packages/frontend`
 
