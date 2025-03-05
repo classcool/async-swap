@@ -5,6 +5,7 @@ import { CounterHook } from "../src/CounterHook.sol";
 import { FFIHelper } from "./FFIHelper.sol";
 import { console } from "forge-std/Test.sol";
 import { MockERC20 } from "solmate/src/test/utils/mocks/MockERC20.sol";
+import { IHooks } from "v4-core/interfaces/IHooks.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { LPFeeLibrary } from "v4-core/libraries/LPFeeLibrary.sol";
 import { Currency } from "v4-core/types/Currency.sol";
@@ -14,7 +15,7 @@ import { PoolKey } from "v4-core/types/PoolKey.sol";
 contract IntializePool is FFIHelper {
 
   IPoolManager manager;
-  CounterHook hook;
+  IHooks hook;
   Currency currency0;
   Currency currency1;
   PoolKey key;

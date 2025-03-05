@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import { CounterHook } from "../src/CounterHook.sol";
 import { FFIHelper } from "./FFIHelper.sol";
 import { console } from "forge-std/Test.sol";
+import { IHooks } from "v4-core/interfaces/IHooks.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { Hooks } from "v4-core/libraries/Hooks.sol";
 import { HookMiner } from "v4-periphery/src/utils/HookMiner.sol";
@@ -12,7 +13,7 @@ import { HookMiner } from "v4-periphery/src/utils/HookMiner.sol";
 contract DeployHookScript is FFIHelper {
 
   IPoolManager manager;
-  CounterHook public hook;
+  IHooks public hook;
 
   function setUp() public {
     manager = _getDeployedPoolManager();
