@@ -2,7 +2,7 @@
   "name": "hook-starter",
   "module": "index.ts",
   "workspaces": [
-    "packages/app",
+    "packages/frontend",
     "packages/indexer"
   ],
   "devDependencies": {
@@ -13,4 +13,3 @@
   },
   "type": "module"
 }
-
