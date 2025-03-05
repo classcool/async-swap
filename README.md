@@ -24,7 +24,6 @@ bun install
 > cast wallet import --mnemonic "test test test test test test test test test test test junk" anvil
 > ```
 
-## Contracts
 
 Run local anvil node
 
