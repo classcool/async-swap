@@ -9,24 +9,24 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@tanstack/react-query": "5.45.1",
-    "next": "14.2.4",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "viem": "latest",
-    "wagmi": "latest"
+    "@tanstack/react-query": "5.67.1",
+    "next": "15.2.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.23.6",
+    "wagmi": "^2.14.12"
   },
   "devDependencies": {
-    "@types/node": "^20.12.10",
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.0",
-    "@wagmi/cli": "latest",
-    "bufferutil": "^4.0.8",
+    "@types/node": "^22.13.9",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@wagmi/cli": "^2.2.0",
+    "bufferutil": "^4.0.9",
     "encoding": "^0.1.13",
     "lokijs": "^1.5.12",
-    "pino-pretty": "^10.3.1",
-    "supports-color": "^9.4.0",
-    "typescript": "^5.4.5",
-    "utf-8-validate": "^5.0.2"
+    "pino-pretty": "^13.0.0",
+    "supports-color": "^10.0.0",
+    "typescript": "^5.8.2",
+    "utf-8-validate": "^6.0.5"
   }
 }
