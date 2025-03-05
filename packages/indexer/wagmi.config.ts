@@ -7,7 +7,7 @@ export default defineConfig({
 	plugins: [
 		actions({
 			getActionName: "legacy",
-			overridePackageName: "@ wagmi",
+			overridePackageName: "@wagmi/core",
 		}),
 		foundry({
 			project: "../../",
