@@ -1,6 +1,7 @@
 # hook-starter
 
-A monorepo template for end-to-end delopment in Uniswap V4 hooks.
+Frontend + Indexer + Foundry monorepo for end-to-end development of Uniswap V4 hooks. 
+
 
 ## Install
 
@@ -23,7 +24,6 @@ bun install
 > ```sh
 > cast wallet import --mnemonic "test test test test test test test test test test test junk" anvil
 > ```
-
 
 Run local anvil node
 
