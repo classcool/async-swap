@@ -113,12 +113,16 @@ export const userRelations = relations(user, ({ one, many }) => ({
 }));
 
 export const poolRelations = relations(pool, ({ one, many }) => ({
-	currency: one(currency, {
-		fields: [pool.chainId],
-		references: [currency.chainId],
-	}),
 	liquidity: many(liquidity),
 	swap: many(swap),
+	token0: one(currency, {
+		fields: [pool.currency0],
+		references: [currency.address],
+	}),
+	token1: one(currency, {
+		fields: [pool.currency1, pool.chainId],
+		references: [currency.address, currency.chainId],
+	}),
 }));
 
 export const liquidityRelations = relations(liquidity, ({ one }) => ({
