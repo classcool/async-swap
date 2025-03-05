@@ -101,7 +101,7 @@ ponder.on("PoolManager:Transfer", async ({ event, context }) => {
 			from: event.args.from,
 			to: event.args.to,
 			erc6909Id:
-				toHex(event.args.id) === "0x00" ? ZERO_ADDRESS : toHex(event.args.id),
+				toHex(event.args.id) === "0x00" ? "0x0000000000000000000000000000000000000000" : toHex(event.args.id),
 			amount: event.args.amount,
 			chainId: context.network.chainId,
 		})
