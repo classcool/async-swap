@@ -2,7 +2,7 @@ import { createConfig } from "ponder";
 import { getAddress, http, hexToNumber } from "viem";
 import type { Hex } from "viem";
 import { PoolManagerAbi } from "./abis/PoolManagerAbi";
-import { remittanceCsmmAbi } from "./abis/generated";
+import { counterHookAbi, remittanceCsmmAbi } from "./abis/generated";
 import DeployPoolManager from "../../broadcast/00_DeployPoolManager.s.sol/31337/run-latest.json";
 import DeployHook from "../../broadcast/01_DeployHook.s.sol/31337/run-latest.json";
 
@@ -33,6 +33,15 @@ export default createConfig({
 				},
 			},
 			abi: PoolManagerAbi,
+		},
+		CounterHook: {
+			network: {
+				anvil: {
+					address: hookAddress,
+					startBlock: hookStartBlock,
+				},
+			},
+			abi: counterHookAbi,
 		},
 		RemittanceHook: {
 			network: {
