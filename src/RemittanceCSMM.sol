@@ -63,7 +63,9 @@ contract RemittanceCSMM is BaseHook {
   /// @notice Custom add liquidity function
   function addLiquidity(PoolKey calldata key, uint256 amountEach) external {
     poolManager.unlock(abi.encode(CallbackData(amountEach, key.currency0, key.currency1, msg.sender)));
-    emit BeforeAddLiquidity(key.toId(), msg.sender, toBalanceDelta(int128(int256(amountEach)), int128(int256(amountEach))));
+    emit BeforeAddLiquidity(
+      key.toId(), msg.sender, toBalanceDelta(int128(int256(amountEach)), int128(int256(amountEach)))
+    );
   }
 
   function _beforeSwap(address, PoolKey calldata key, IPoolManager.SwapParams calldata params, bytes calldata)
