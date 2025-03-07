@@ -11,7 +11,9 @@ import { LPFeeLibrary } from "v4-core/libraries/LPFeeLibrary.sol";
 import { Currency } from "v4-core/types/Currency.sol";
 import { PoolKey } from "v4-core/types/PoolKey.sol";
 
+address constant OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 /// @notice Scripts to intialize pool
+
 contract IntializePool is FFIHelper {
 
   IPoolManager manager;
@@ -41,6 +43,8 @@ contract IntializePool is FFIHelper {
     /// @dev deploy tokens
     MockERC20 rUSD = new MockERC20("Remittance USD", "rUSD", 18);
     MockERC20 usdc = new MockERC20("USDC Token", "USDC", 6);
+    rUSD.mint(OWNER, 1000e18);
+    usdc.mint(OWNER, 1000e18);
 
     /// @dev set currency0 and currency1 order
     if (rUSD < usdc) {
