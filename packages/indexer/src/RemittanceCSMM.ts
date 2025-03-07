@@ -26,8 +26,10 @@ ponder.on("RemittanceHook:BeforeAddLiquidity", async ({ event, context }) => {
 		if (client.readyState == WebSocket.OPEN) {
 			client.send(
 				JSON.stringify({
-					message: "Added Liquidity",
+					message: "Add Liquidity",
 					poolId: event.args.poolId,
+					sender: event.args.sender,
+					liquidityDelta: toHex(event.args.liquidityDelta),
 				}),
 			);
 		}
