@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 import { headers } from "next/headers";
 import { type ReactNode } from "react";
 import { cookieToInitialState } from "wagmi";
-
+import { Toaster } from "@/components/ui/sonner";
 import { getConfig } from "../wagmi";
 import { Providers } from "./providers";
 
@@ -22,9 +22,10 @@ export default async function RootLayout(props: { children: ReactNode }) {
 		headersList.get("cookie"),
 	);
 	return (
-		<html lang="en">
-			<body className={inter.className}>
+		<html lang="en" suppressHydrationWarning>
+			<body className={`${inter.className} dark`}>
 				<Providers initialState={initialState}>{props.children}</Providers>
+				<Toaster />
 			</body>
 		</html>
 	);
