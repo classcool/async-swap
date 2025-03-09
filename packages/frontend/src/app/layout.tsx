@@ -1,12 +1,14 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { type ReactNode } from "react";
 import { cookieToInitialState } from "wagmi";
 import { Toaster } from "@/components/ui/sonner";
 import { getConfig } from "../wagmi";
 import { Providers } from "./providers";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,11 +23,16 @@ export default async function RootLayout(props: { children: ReactNode }) {
 		getConfig(),
 		headersList.get("cookie"),
 	);
+	const cookieStore = await cookies();
+	const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
+
 	return (
 		<html lang="en" suppressHydrationWarning>
-			<body className={`${inter.className} dark`}>
-				<Providers initialState={initialState}>{props.children}</Providers>
-				<Toaster />
+			<body className={`${inter.className}`}>
+				<Providers initialState={initialState}>
+					<Toaster position="top-right" />
+					<main className="h-svh w-svw">{props.children}</main>
+				</Providers>
 			</body>
 		</html>
 	);
