@@ -149,7 +149,10 @@
 		@apply border px-4 py-2 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right;
 	}
 	ul {
-		@apply my-6 ml-6 list-disc [&>li]:mt-2;
+		@apply list-none [&>li]:mt-2;
+	}
+	li {
+		@apply list-none;
 	}
 	code {
 		@apply relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold;
