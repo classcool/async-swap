@@ -1,6 +1,5 @@
 "use client";
 
-import React, { use, useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -18,12 +17,14 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { fetchData, poolsQuery } from "@/lib/queries";
+import type React from "react";
+import { useEffect, useState } from "react";
+import type { Hex } from "viem";
+import { useWriteContract } from "wagmi";
 import { ERC20Abi } from "../../../../../../indexer/abis/ERC20Abi";
 import { remittanceCsmmAbi } from "../../../../../../indexer/abis/generated";
-import { poolsQuery, fetchData } from "@/lib/queries";
-import { useWriteContract } from "wagmi";
-import { Pool } from "../../pools/columns";
-import { Hex } from "viem";
+import type { Pool } from "../../pools/columns";
 
 export default function AddLiquidity() {
 	const [amount0, setAmount0] = useState(undefined);

@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { headers, cookies } from "next/headers";
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { cookieToInitialState } from "wagmi";
 import { Toaster } from "@/components/ui/sonner";
 import { getConfig } from "../wagmi";

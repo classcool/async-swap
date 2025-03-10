@@ -4,7 +4,7 @@ import { toHex } from "viem";
 import { WebSocketServer } from "ws";
 
 const wss = new WebSocketServer({ port: 8080 });
-let clients: WebSocket[] = [];
+const clients: WebSocket[] = [];
 
 wss.on("connection", (ws) => {
 	clients.push(ws);
@@ -22,8 +22,8 @@ ponder.on("RemittanceHook:BeforeAddLiquidity", async ({ event, context }) => {
 		chainId: context.network.chainId,
 	});
 
-	clients.forEach((client) => {
-		if (client.readyState == WebSocket.OPEN) {
+	for (const client of clients) {
+		if (client.readyState === WebSocket.OPEN) {
 			client.send(
 				JSON.stringify({
 					message: "Add Liquidity",
@@ -33,7 +33,7 @@ ponder.on("RemittanceHook:BeforeAddLiquidity", async ({ event, context }) => {
 				}),
 			);
 		}
-	});
+	}
 });
 
 ponder.on("RemittanceHook:BeforeSwap", async ({ event, context }) => {
