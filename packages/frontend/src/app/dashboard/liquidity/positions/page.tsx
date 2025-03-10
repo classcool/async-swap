@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchData, liquiditysQuery } from "@/lib/queries";
 import { DataTable } from "../../data-table";
 import { columns } from "./columns";
+import Loading from "../../loading";
 
 export default function LiquidityPositions() {
 	const [liquiditys, setLiquiditys] = useState([]);
@@ -27,6 +28,7 @@ export default function LiquidityPositions() {
 		};
 		fetchQueryData();
 	}, []);
+	if (loading) return <Loading />;
 	return (
 		<div className="grid gap-4">
 			<h2>Liquidity Positions</h2>

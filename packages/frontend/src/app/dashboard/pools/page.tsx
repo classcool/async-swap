@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { poolsQuery, fetchData } from "@/lib/queries";
 import { DataTable } from "../data-table";
 import { columns } from "./columns";
+import Loading from "../loading";
 
 export default function Pools() {
 	const [pools, setPools] = useState([]);
@@ -26,10 +27,13 @@ export default function Pools() {
 		};
 		fetchQueryData();
 	}, []);
+	if (loading) return <Loading />;
 	return (
 		<div className="grid gap-4">
 			<h2>Pools</h2>
-			<DataTable columns={columns} data={pools} />
+			<Suspense fallback={<Loading />}>
+				<DataTable columns={columns} data={pools} />
+			</Suspense>
 		</div>
 	);
 }

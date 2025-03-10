@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { columns } from "./columns";
 import { DataTable } from "../data-table";
 import { fetchData, hooksQuery } from "@/lib/queries";
+import Loading from "../loading";
 
 export default function Hooks() {
 	const [hooks, setHooks] = useState([]);
@@ -27,6 +28,7 @@ export default function Hooks() {
 		};
 		fetchQueryData();
 	}, []);
+	if (loading) return <Loading />;
 	return (
 		<div className="grid gap-4">
 			<h2>Hooks</h2>

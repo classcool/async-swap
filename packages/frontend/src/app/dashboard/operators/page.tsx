@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { columns } from "./columns";
 import { DataTable } from "../data-table";
 import { fetchData, operatorsQuery } from "@/lib/queries";
+import Loading from "../loading";
 
 export default function Operators() {
 	const [hooks, setHooks] = useState([]);
@@ -27,6 +28,7 @@ export default function Operators() {
 		};
 		fetchQueryData();
 	}, []);
+	if (loading) return <Loading />;
 	return (
 		<div className="grid gap-4">
 			<h2>Operators</h2>
