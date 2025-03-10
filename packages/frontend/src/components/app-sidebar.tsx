@@ -8,6 +8,10 @@ import {
 	Send,
 	Settings2,
 	LayoutDashboard,
+	Waves,
+	Unplug,
+	ChartCandlestick,
+	KeySquare,
 } from "lucide-react";
 import Link from "next/link";
 import { NavMain } from "@/components/nav-main";
@@ -36,9 +40,39 @@ const data = {
 			icon: LayoutDashboard,
 		},
 		{
-			title: "Add Liqudity",
-			url: "/dashboard/add-liquidity",
+			title: "Hooks",
+			url: "/dashboard/hooks",
+			icon: Unplug,
+		},
+		{
+			title: "Pools",
+			url: "/dashboard/pools",
+			icon: Waves,
+		},
+		{
+			title: "Currencies",
+			url: "/dashboard/currencies",
+			icon: ChartCandlestick,
+		},
+		{
+			title: "Liquidity",
+			url: "/dashboard/liquidity",
 			icon: WavesLadder,
+			items: [
+				{
+					title: "Add",
+					url: "/dashboard/liquidity/add",
+				},
+				{
+					title: "Positions",
+					url: "/dashboard/liquidity/positions",
+				},
+			],
+		},
+		{
+			title: "Operators",
+			url: "/dashboard/operators",
+			icon: KeySquare,
 		},
 		{
 			title: "Documentation",
@@ -104,7 +138,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<SidebarMenuButton size="lg" asChild>
-							<Link href="#">
+							<Link href="/dashboard">
 								<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
 									🪝
 								</div>

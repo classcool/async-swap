@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useCallback } from "react";
 import { type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import {
@@ -23,16 +23,18 @@ export function NavSecondary({
 		<SidebarGroup {...props}>
 			<SidebarGroupContent>
 				<SidebarMenu>
-					{items.map((item) => (
-						<SidebarMenuItem key={item.title}>
-							<SidebarMenuButton asChild size="sm">
-								<Link href={item.url}>
-									<item.icon />
-									<span>{item.title}</span>
-								</Link>
-							</SidebarMenuButton>
-						</SidebarMenuItem>
-					))}
+					{items.map((item) => {
+						return (
+							<SidebarMenuItem key={item.title}>
+								<SidebarMenuButton asChild size="sm">
+									<Link href={item.url} target="_blank">
+										<item.icon />
+										<span>{item.title}</span>
+									</Link>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						);
+					})}
 				</SidebarMenu>
 			</SidebarGroupContent>
 		</SidebarGroup>
