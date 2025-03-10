@@ -1,12 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
 import { AppSidebar } from "../../components/app-sidebar";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
 	BreadcrumbLink,
 	BreadcrumbList,
-	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
@@ -16,6 +16,7 @@ import {
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useSelectedLayoutSegments } from "next/navigation";
+import { toast } from "sonner";
 
 export default function DashboardLayout({
 	children,
@@ -24,6 +25,21 @@ export default function DashboardLayout({
 }) {
 	const segments = useSelectedLayoutSegments();
 
+	useEffect(() => {
+		const socket = new WebSocket("ws://localhost:8080");
+		socket.onmessage = (event) => {
+			const data = JSON.parse(event.data);
+			toast(data.message, {
+				description: (
+					<>
+						<p className="text-sm">liquidity: {data.liquidityDelta}</p>
+					</>
+				),
+			});
+		};
+
+		return () => socket.close();
+	}, []);
 	return (
 		<SidebarProvider>
 			<AppSidebar />
@@ -36,8 +52,8 @@ export default function DashboardLayout({
 							<BreadcrumbList>
 								{segments.map((segment, index) => {
 									return (
-										<>
-											<BreadcrumbItem key={index} className="hidden md:block">
+										<div className="flex items-center gap-2" key={index}>
+											<BreadcrumbItem className="hidden md:block">
 												<BreadcrumbLink
 													href={`/dashboard/${segments.slice(0, index + 1).join("/")}`}
 												>
@@ -45,7 +61,7 @@ export default function DashboardLayout({
 												</BreadcrumbLink>
 											</BreadcrumbItem>
 											<BreadcrumbSeparator className="hidden md:block" />
-										</>
+										</div>
 									);
 								})}
 							</BreadcrumbList>
