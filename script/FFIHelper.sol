@@ -26,4 +26,12 @@ contract FFIHelper is Script {
     return IHooks(hookAddresss);
   }
 
+  function _getPoolTopics() internal view returns (uint256[] memory) {
+    string memory root = vm.projectRoot();
+    string memory path = string.concat(root, "/broadcast/02_InitilizePool.s.sol/31337/run-latest.json");
+    string memory json = vm.readFile(path);
+    uint256[] memory topics = json.readUintArray(".receipts[4].logs[0].topics");
+    return topics;
+  }
+
 }

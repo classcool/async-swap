@@ -19,7 +19,8 @@
     "@wagmi/core": "^2.16.5",
     "hono": "^4.5.0",
     "ponder": "^0.9.19",
-    "viem": "^2.21.3"
+    "viem": "^2.21.3",
+    "ws": "^8.18.1"
   },
   "devDependencies": {
     "@types/node": "^20.9.0",
