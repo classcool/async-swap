@@ -50,6 +50,12 @@ Initialize a pool with your hook attached
 forge script --broadcast --rpc-url localhost:8545 --account anvil -vvvv script/02_InitilizePool.s.sol
 ```
 
+Add liqudity to previously initialized pool
+
+```sh
+forge script --broadcast --rpc-url http:localhost:8545 --account anvil -vvvv script/03_AddLiquidity.s.sol
+```
+
 ## Indexer `packages/indexer`
 
 Go to indexer
