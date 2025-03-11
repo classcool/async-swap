@@ -23,7 +23,7 @@ import { useEffect, useState } from "react";
 import type { Hex } from "viem";
 import { useWriteContract } from "wagmi";
 import { ERC20Abi } from "../../../../../../indexer/abis/ERC20Abi";
-import { remittanceCsmmAbi } from "../../../../../../indexer/abis/generated";
+import { csmmAbi } from "../../../../../../indexer/abis/generated";
 import type { Pool } from "../../pools/columns";
 
 export default function AddLiquidity() {
@@ -65,10 +65,10 @@ export default function AddLiquidity() {
 			fee: selectPool.fee,
 			tickSpacing: selectPool.tickSpacing,
 			hooks: selectPool.hooks as Hex,
-		};
+		} as const; // this equivalent to struct
 
 		writeContract({
-			abi: remittanceCsmmAbi,
+			abi: csmmAbi,
 			address: selectPool.hooks as Hex,
 			functionName: "addLiquidity",
 			args: [poolKey, BigInt(amount0)],
@@ -84,7 +84,7 @@ export default function AddLiquidity() {
 					console.log(data);
 					setPools(data.data.pools.items);
 				});
-			} catch (err: any) {
+			} catch (err) {
 				setError(err);
 			} finally {
 				setLoading(false);
@@ -116,14 +116,20 @@ export default function AddLiquidity() {
 										<SelectValue placeholder="Select" />
 									</SelectTrigger>
 									<SelectContent position="popper">
-										{pools &&
+										{pools ? (
 											pools.map((pool, index) => {
 												return (
-													<SelectItem key={index} value={index.toString()}>
+													<SelectItem
+														key={pool.chainId + pool.currency0 + pool.currency1}
+														value={index.toString()}
+													>
 														{`${pool.token0.symbol}-${pool.token1.symbol}`}
 													</SelectItem>
 												);
-											})}
+											})
+										) : (
+											<></>
+										)}
 									</SelectContent>
 								</Select>
 							</div>

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { RemittanceCSMM } from "../src/RemittanceCSMM.sol";
 import { FFIHelper } from "./FFIHelper.sol";
 import { console } from "forge-std/Test.sol";
 import { MockERC20 } from "solmate/src/test/utils/mocks/MockERC20.sol";

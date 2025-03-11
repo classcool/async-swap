@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { RemittanceCSMM } from "../src/RemittanceCSMM.sol";
+import { CSMM } from "../src/CSMM.sol";
 import { FFIHelper } from "./FFIHelper.sol";
 import { console } from "forge-std/Test.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
@@ -18,7 +18,7 @@ contract AddLiquidityScript is FFIHelper {
   using PoolIdLibrary for PoolKey;
 
   IPoolManager manager;
-  RemittanceCSMM hook;
+  CSMM hook;
   bytes32 poolId;
   Currency currency0;
   Currency currency1;
@@ -26,7 +26,7 @@ contract AddLiquidityScript is FFIHelper {
 
   function setUp() public {
     manager = _getDeployedPoolManager();
-    hook = RemittanceCSMM(address(_getDeployedHook()));
+    hook = CSMM(address(_getDeployedHook()));
     uint256[] memory topics = _getPoolTopics();
     poolId = bytes32(topics[1]);
     currency0 = Currency.wrap(address(uint160(topics[2])));

@@ -13,7 +13,7 @@ import { BaseHook } from "v4-periphery/src/utils/BaseHook.sol";
 
 /// @title Remittance CSMM
 /// @notice A NoOp hook that mints 1:1 tokens
-contract RemittanceCSMM is BaseHook {
+contract CSMM is BaseHook {
 
   using CurrencySettler for Currency;
   using PoolIdLibrary for PoolKey;
