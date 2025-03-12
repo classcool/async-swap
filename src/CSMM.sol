@@ -108,8 +108,8 @@ contract CSMM is BaseHook {
     return (this.beforeSwap.selector, beforeSwapDelta, 0);
   }
 
-	/// @notice Settle async swaps
-	/// @dev called by keeper to settle swaps and execute transation orders
+  /// @notice Settle async swaps
+  /// @dev called by keeper to settle swaps and execute transation orders
   function settleAsyncSwap() external { }
 
   function unlockCallback(bytes calldata data) external onlyPoolManager returns (bytes memory) {
