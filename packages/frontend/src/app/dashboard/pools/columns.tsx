@@ -60,7 +60,7 @@ export const columns: ColumnDef<Pool>[] = [
 								</>
 							</DropdownMenuItem>
 						) : (
-							<></>
+							<div />
 						)}
 						{pool.currency1 !== "0x0000000000000000000000000000000000000000" ? (
 							<DropdownMenuItem
@@ -72,7 +72,7 @@ export const columns: ColumnDef<Pool>[] = [
 								</>
 							</DropdownMenuItem>
 						) : (
-							<></>
+							<div />
 						)}
 						{pool.hooks !== "0x0000000000000000000000000000000000000000" ? (
 							<DropdownMenuItem
@@ -84,7 +84,7 @@ export const columns: ColumnDef<Pool>[] = [
 								</>
 							</DropdownMenuItem>
 						) : (
-							<></>
+							<div />
 						)}
 					</DropdownMenuContent>
 				</DropdownMenu>

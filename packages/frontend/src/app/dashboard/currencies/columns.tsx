@@ -37,7 +37,7 @@ export const columns: ColumnDef<CurrencyType>[] = [
 								<MoreHorizontal />
 							</Button>
 						) : (
-							<></>
+							<div />
 						)}
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
@@ -66,7 +66,7 @@ export const columns: ColumnDef<CurrencyType>[] = [
 								</>
 							</DropdownMenuItem>
 						) : (
-							<></>
+							<div />
 						)}
 					</DropdownMenuContent>
 				</DropdownMenu>

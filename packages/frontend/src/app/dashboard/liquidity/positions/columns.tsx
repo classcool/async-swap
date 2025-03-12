@@ -60,7 +60,7 @@ export const columns: ColumnDef<CurrencyType>[] = [
 								</>
 							</DropdownMenuItem>
 						) : (
-							<></>
+							<div />
 						)}
 					</DropdownMenuContent>
 				</DropdownMenu>

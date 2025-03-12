@@ -32,7 +32,7 @@ export const columns: ColumnDef<HookType>[] = [
 								<MoreHorizontal className="h-4 w-4" />
 							</Button>
 						) : (
-							<></>
+							<div />
 						)}
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
@@ -61,7 +61,7 @@ export const columns: ColumnDef<HookType>[] = [
 								</>
 							</DropdownMenuItem>
 						) : (
-							<></>
+							<div />
 						)}
 					</DropdownMenuContent>
 				</DropdownMenu>

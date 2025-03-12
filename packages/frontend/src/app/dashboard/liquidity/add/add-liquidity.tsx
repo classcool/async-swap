@@ -79,10 +79,9 @@ export default function AddLiquidity() {
 		const endpoint = "http://localhost:42069";
 		const fetchQueryData = async () => {
 			try {
-				fetchData(endpoint, poolsQuery).then(async (r) => {
-					const data = await r.json();
+				fetchData("", "", endpoint, 31337, poolsQuery).then(async (data) => {
 					console.log(data);
-					setPools(data.data.pools.items);
+					setPools(data.pools.items);
 				});
 			} catch (err) {
 				setError(err);
@@ -128,7 +127,7 @@ export default function AddLiquidity() {
 												);
 											})
 										) : (
-											<></>
+											<div />
 										)}
 									</SelectContent>
 								</Select>
