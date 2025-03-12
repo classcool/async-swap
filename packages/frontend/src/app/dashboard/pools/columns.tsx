@@ -1,7 +1,6 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -10,6 +9,9 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, Copy, MoreHorizontal } from "lucide-react";
+import { useMemo } from "react";
 
 export type Pool = {
 	chainId: number;
@@ -48,11 +50,42 @@ export const columns: ColumnDef<Pool>[] = [
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
 						<DropdownMenuLabel>Actions</DropdownMenuLabel>
-						<DropdownMenuItem
-							onClick={() => navigator.clipboard.writeText(pool.hooks)}
-						>
-							Copy Hook Address
-						</DropdownMenuItem>
+						{pool.currency0 !== "0x0000000000000000000000000000000000000000" ? (
+							<DropdownMenuItem
+								onClick={() => navigator.clipboard.writeText(pool.currency0)}
+							>
+								<>
+									<Copy />
+									Copy Currency0
+								</>
+							</DropdownMenuItem>
+						) : (
+							<></>
+						)}
+						{pool.currency1 !== "0x0000000000000000000000000000000000000000" ? (
+							<DropdownMenuItem
+								onClick={() => navigator.clipboard.writeText(pool.currency1)}
+							>
+								<>
+									<Copy />
+									Copy Currency1
+								</>
+							</DropdownMenuItem>
+						) : (
+							<></>
+						)}
+						{pool.hooks !== "0x0000000000000000000000000000000000000000" ? (
+							<DropdownMenuItem
+								onClick={() => navigator.clipboard.writeText(pool.hooks)}
+							>
+								<>
+									<Copy />
+									Copy Hook
+								</>
+							</DropdownMenuItem>
+						) : (
+							<></>
+						)}
 					</DropdownMenuContent>
 				</DropdownMenu>
 			);
@@ -60,7 +93,34 @@ export const columns: ColumnDef<Pool>[] = [
 	},
 	{
 		accessorKey: "chainId",
-		header: "ChainId",
+		cell: ({ row }) => {
+			const pool = row.original;
+			return (
+				<>
+					{pool.chainId === 31337 ? (
+						<>
+							{pool.chainId}
+							<Badge variant="destructive" className="ml-4">
+								testnet
+							</Badge>
+						</>
+					) : (
+						<>{pool.chainId}</>
+					)}
+				</>
+			);
+		},
+		header: ({ column }) => {
+			return (
+				<Button
+					variant="ghost"
+					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+				>
+					ChainId
+					<ArrowUpDown className="ml-2 h-4 w-4" />
+				</Button>
+			);
+		},
 	},
 	{
 		accessorKey: "currency0",
@@ -76,10 +136,30 @@ export const columns: ColumnDef<Pool>[] = [
 	},
 	{
 		accessorKey: "fee",
-		header: "Fee",
+		header: ({ column }) => {
+			return (
+				<Button
+					variant="ghost"
+					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+				>
+					Fee
+					<ArrowUpDown className="ml-2 h-4 w-4" />
+				</Button>
+			);
+		},
 	},
 	{
 		accessorKey: "tickSpacing",
-		header: "tickSpacing",
+		header: ({ column }) => {
+			return (
+				<Button
+					variant="ghost"
+					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+				>
+					tickSpacing
+					<ArrowUpDown className="ml-2 h-4 w-4" />
+				</Button>
+			);
+		},
 	},
 ];

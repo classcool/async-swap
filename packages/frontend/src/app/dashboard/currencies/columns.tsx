@@ -1,7 +1,6 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -10,6 +9,8 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, Code, Copy, MoreHorizontal } from "lucide-react";
 
 export type CurrencyType = {
 	chainId: number;
@@ -29,18 +30,44 @@ export const columns: ColumnDef<CurrencyType>[] = [
 			return (
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" className="h-8 w-8 p-0">
-							<span className="sr-only">Open menu</span>
-							<MoreHorizontal />
-						</Button>
+						{currency.address !==
+						"0x0000000000000000000000000000000000000000" ? (
+							<Button variant="ghost" className="h-8 w-8 p-0">
+								<span className="sr-only">Open menu</span>
+								<MoreHorizontal />
+							</Button>
+						) : (
+							<></>
+						)}
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
 						<DropdownMenuLabel>Actions</DropdownMenuLabel>
 						<DropdownMenuItem
 							onClick={() => navigator.clipboard.writeText(currency.address)}
 						>
-							Copy Token Address
+							<>
+								<Copy />
+								Copy Address
+							</>
 						</DropdownMenuItem>
+						{currency.chainId === 130 &&
+						currency.address !==
+							"0x0000000000000000000000000000000000000000" ? (
+							<DropdownMenuItem
+								onClick={() =>
+									window.open(
+										`https://uniscan.xyz/address/${currency.address}#code`,
+									)
+								}
+							>
+								<>
+									<Code />
+									View Code
+								</>
+							</DropdownMenuItem>
+						) : (
+							<></>
+						)}
 					</DropdownMenuContent>
 				</DropdownMenu>
 			);
@@ -48,7 +75,34 @@ export const columns: ColumnDef<CurrencyType>[] = [
 	},
 	{
 		accessorKey: "chainId",
-		header: "ChainId",
+		cell: ({ row }) => {
+			const pool = row.original;
+			return (
+				<>
+					{pool.chainId === 31337 ? (
+						<>
+							{pool.chainId}
+							<Badge variant="destructive" className="ml-4">
+								testnet
+							</Badge>
+						</>
+					) : (
+						<>{pool.chainId}</>
+					)}
+				</>
+			);
+		},
+		header: ({ column }) => {
+			return (
+				<Button
+					variant="ghost"
+					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+				>
+					ChainId
+					<ArrowUpDown className="ml-2 h-4 w-4" />
+				</Button>
+			);
+		},
 	},
 	{
 		accessorKey: "name",
@@ -64,6 +118,16 @@ export const columns: ColumnDef<CurrencyType>[] = [
 	},
 	{
 		accessorKey: "decimals",
-		header: "Decimals",
+		header: ({ column }) => {
+			return (
+				<Button
+					variant="ghost"
+					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+				>
+					Decimals
+					<ArrowUpDown className="ml-2 h-4 w-4" />
+				</Button>
+			);
+		},
 	},
 ];

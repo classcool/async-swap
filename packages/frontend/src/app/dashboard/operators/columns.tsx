@@ -1,6 +1,7 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -8,8 +9,8 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, Copy, MoreHorizontal } from "lucide-react";
 
 export type HookType = {
 	approved: boolean;
@@ -36,7 +37,18 @@ export const columns: ColumnDef<HookType>[] = [
 						<DropdownMenuItem
 							onClick={() => navigator.clipboard.writeText(pool.operator)}
 						>
-							Copy Operator Address
+							<>
+								<Copy />
+								Copy Operator
+							</>
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							onClick={() => navigator.clipboard.writeText(pool.owner)}
+						>
+							<>
+								<Copy />
+								Copy Owner
+							</>
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
@@ -45,7 +57,34 @@ export const columns: ColumnDef<HookType>[] = [
 	},
 	{
 		accessorKey: "chainId",
-		header: "ChainId",
+		cell: ({ row }) => {
+			const pool = row.original;
+			return (
+				<>
+					{pool.chainId === 31337 ? (
+						<>
+							{pool.chainId}
+							<Badge variant="destructive" className="ml-4">
+								testnet
+							</Badge>
+						</>
+					) : (
+						<>{pool.chainId}</>
+					)}
+				</>
+			);
+		},
+		header: ({ column }) => {
+			return (
+				<Button
+					variant="ghost"
+					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+				>
+					ChainId
+					<ArrowUpDown className="ml-2 h-4 w-4" />
+				</Button>
+			);
+		},
 	},
 	{
 		accessorKey: "operator",
