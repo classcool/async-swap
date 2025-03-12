@@ -1,6 +1,6 @@
 "use client";
 
-import {  hooksQuery } from "@/lib/queries";
+import { hooksQuery } from "@/lib/queries";
 import { DataTable } from "../data-table";
 import { columns } from "./columns";
 
