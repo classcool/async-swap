@@ -1,6 +1,5 @@
 "use client";
 
-import { BadgeCheck, ChevronsUpDown, LogOut, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -17,6 +16,7 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/components/ui/sidebar";
+import { BadgeCheck, ChevronsUpDown, LogOut, Sparkles } from "lucide-react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 
 export function NavUser({
@@ -93,7 +93,7 @@ export function NavUser({
 						{account.status === "connected" && (
 							<DropdownMenuItem onClick={() => disconnect()}>
 								<LogOut />
-								Log out
+								Disconnect
 							</DropdownMenuItem>
 						)}
 					</DropdownMenuContent>
