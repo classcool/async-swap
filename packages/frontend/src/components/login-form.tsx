@@ -1,14 +1,34 @@
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Link from "next/link"
+import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 
 export function LoginForm({
 	className,
 	...props
 }: React.ComponentProps<"div">) {
+	const router = useRouter();
+	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+		const formData = new FormData(event.currentTarget);
+		const email = formData.get("email");
+		const password = formData.get("password");
+
+		const response = await fetch("/api/auth/login", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ email, password }),
+		});
+
+		if (response.ok) {
+			router.push("/dashboard");
+		} else {
+			// handle error
+		}
+	}
 	return (
 		<div className={cn("flex flex-col gap-6", className)} {...props}>
 			<Card className="overflow-hidden">
@@ -33,12 +53,12 @@ export function LoginForm({
 							<div className="grid gap-2">
 								<div className="flex items-center">
 									<Label htmlFor="password">Password</Label>
-									<Link 
+									<Link
 										href="#"
 										className="ml-auto text-sm underline-offset-2 hover:underline"
 									>
 										Forgot your password?
-									</Link> 
+									</Link>
 								</div>
 								<Input id="password" type="password" required />
 							</div>
@@ -83,7 +103,7 @@ export function LoginForm({
 								Don&apos;t have an account?{" "}
 								<Link href="#" className="underline underline-offset-4">
 									Sign up
-								</Link> 
+								</Link>
 							</div>
 						</div>
 					</form>
@@ -97,8 +117,9 @@ export function LoginForm({
 				</CardContent>
 			</Card>
 			<div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
-				By clicking continue, you agree to our <Link href="#">Terms of Service</Link> {" "}
-				and <Link href="#">Privacy Policy</Link> .
+				By clicking continue, you agree to our{" "}
+				<Link href="#">Terms of Service</Link> and{" "}
+				<Link href="#">Privacy Policy</Link> .
 			</div>
 		</div>
 	);
