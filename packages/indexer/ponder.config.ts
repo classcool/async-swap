@@ -23,6 +23,10 @@ export default createConfig({
 			transport: http("http://127.0.0.1:8545"),
 			disableCache: true,
 		},
+		unichain: {
+			chainId: 130,
+			transport: http(process.env.PONDER_RPC_URL_130),
+		},
 	},
 	contracts: {
 		PoolManager: {
@@ -30,6 +34,10 @@ export default createConfig({
 				anvil: {
 					address: poolManagerAddress,
 					startBlock: poolManagerStartBlock,
+				},
+				unichain: {
+					address: "0x1f98400000000000000000000000000000000004",
+					startBlock: 0,
 				},
 			},
 			abi: PoolManagerAbi,
