@@ -13,13 +13,15 @@ import { BaseHook } from "v4-periphery/src/utils/BaseHook.sol";
 
 /// @title Remittance CSMM
 /// @notice A NoOp hook that mints 1:1 tokens
-contract RemittanceCSMM is BaseHook {
+contract CSMM is BaseHook {
 
   using CurrencySettler for Currency;
   using PoolIdLibrary for PoolKey;
 
+  mapping(address user => uint256 claimable) asyncOrders;
+
   event BeforeAddLiquidity(PoolId poolId, address sender, BalanceDelta liquidityDelta);
-  event BeforeSwap();
+  event BeforeSwap(bytes32 poolId, address owner, bool zeroForOn, int256 amountIn);
 
   error AddLiquidityThroughHook();
 
@@ -29,15 +31,15 @@ contract RemittanceCSMM is BaseHook {
     return Hooks.Permissions({
       beforeInitialize: false,
       afterInitialize: false,
-      beforeAddLiquidity: true, // Don't allow adding liquidity normally
+      beforeAddLiquidity: true, // override liquidity functionality
       afterAddLiquidity: false,
       beforeRemoveLiquidity: false,
       afterRemoveLiquidity: false,
-      beforeSwap: true, // Override how swaps are done
+      beforeSwap: true, // override how swaps are done async swap
       afterSwap: false,
       beforeDonate: false,
       afterDonate: false,
-      beforeSwapReturnDelta: true, // Allow beforeSwap to return a custom delta
+      beforeSwapReturnDelta: true, // allow beforeSwap to return a custom delta, for custom ordering
       afterSwapReturnDelta: false,
       afterAddLiquidityReturnDelta: false,
       afterRemoveLiquidityReturnDelta: false
@@ -68,28 +70,47 @@ contract RemittanceCSMM is BaseHook {
     );
   }
 
-  function _beforeSwap(address, PoolKey calldata key, IPoolManager.SwapParams calldata params, bytes calldata)
-    internal
-    override
-    returns (bytes4, BeforeSwapDelta, uint24)
-  {
-    uint256 amountInOutPositive =
-      params.amountSpecified > 0 ? uint256(params.amountSpecified) : uint256(-params.amountSpecified);
+  struct AsyncOrder {
+    PoolId poolId;
+    address owner;
+    bool zeroForOne;
+    int256 amountIn;
+  }
 
-    BeforeSwapDelta beforeSwapDelta = toBeforeSwapDelta(int128(-params.amountSpecified), int128(params.amountSpecified));
-
-    if (params.zeroForOne) {
-      key.currency0.take(poolManager, address(this), amountInOutPositive, true);
-      key.currency1.settle(poolManager, address(this), amountInOutPositive, true);
-    } else {
-      key.currency0.settle(poolManager, address(this), amountInOutPositive, true);
-      key.currency1.take(poolManager, address(this), amountInOutPositive, true);
+  /// @dev Async swap function
+  /// @dev handles exactInputIn params only
+  /// @notice reference : https://github.com/haardikk21/pause-swap/blob/main/src/Hook.sol
+  function _beforeSwap(
+    address,
+    PoolKey calldata key,
+    IPoolManager.SwapParams calldata params,
+    bytes calldata hookParams
+  ) internal override returns (bytes4, BeforeSwapDelta, uint24) {
+    bool isExactInput = params.amountSpecified < 0;
+    if (!isExactInput) {
+      revert("Exact output not supported");
     }
 
-    emit BeforeSwap();
+    BeforeSwapDelta beforeSwapDelta = toBeforeSwapDelta(int128(-params.amountSpecified), 0);
+    uint256 amountInPositive = uint256(-params.amountSpecified);
+
+    if (params.zeroForOne) {
+      key.currency0.take(poolManager, address(this), amountInPositive, true);
+    } else {
+      key.currency1.take(poolManager, address(this), amountInPositive, true);
+    }
+
+    AsyncOrder memory order = abi.decode(hookParams, (AsyncOrder));
+
+    /// @dev emit event consumed by filler
+    emit BeforeSwap(PoolId.unwrap(order.poolId), order.owner, order.zeroForOne, order.amountIn);
 
     return (this.beforeSwap.selector, beforeSwapDelta, 0);
   }
+
+  /// @notice Settle async swaps
+  /// @dev called by keeper to settle swaps and execute transation orders
+  function settleAsyncSwap() external { }
 
   function unlockCallback(bytes calldata data) external onlyPoolManager returns (bytes memory) {
     CallbackData memory callbackData = abi.decode(data, (CallbackData));

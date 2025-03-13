@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -23,9 +23,11 @@
     "@tanstack/react-table": "^8.21.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "1.0.0",
     "lucide-react": "^0.477.0",
     "motion": "^12.4.10",
     "next": "15.2.1",
+    "next-auth": "^4.24.11",
     "next-themes": "^0.4.4",
     "postcss": "^8.5.3",
     "react": "^19.0.0",

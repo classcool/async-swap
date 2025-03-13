@@ -10,7 +10,7 @@ wss.on("connection", (ws) => {
 	clients.push(ws);
 });
 
-ponder.on("RemittanceHook:BeforeAddLiquidity", async ({ event, context }) => {
+ponder.on("CsmmHook:BeforeAddLiquidity", async ({ event, context }) => {
 	await context.db.insert(schema.liquidity).values({
 		id: event.transaction.hash,
 		poolId: event.args.poolId,
@@ -36,6 +36,6 @@ ponder.on("RemittanceHook:BeforeAddLiquidity", async ({ event, context }) => {
 	}
 });
 
-ponder.on("RemittanceHook:BeforeSwap", async ({ event, context }) => {
+ponder.on("CsmmHook:BeforeSwap", async ({ event, context }) => {
 	console.log(event.args);
 });

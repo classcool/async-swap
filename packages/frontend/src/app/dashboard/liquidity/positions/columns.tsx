@@ -1,7 +1,6 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -10,6 +9,8 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, Copy, Eye, MoreHorizontal } from "lucide-react";
 
 export type CurrencyType = {
 	chainId: number;
@@ -42,8 +43,25 @@ export const columns: ColumnDef<CurrencyType>[] = [
 						<DropdownMenuItem
 							onClick={() => navigator.clipboard.writeText(liquidity.poolId)}
 						>
-							Copy Pool Id
+							<>
+								<Copy />
+								Copy PoolId
+							</>
 						</DropdownMenuItem>
+						{liquidity.chainId === 130 ? (
+							<DropdownMenuItem
+								onClick={() =>
+									window.open(`https://uniscan.xyz/tx/${liquidity.id}#eventlog`)
+								}
+							>
+								<>
+									<Eye />
+									View Log
+								</>
+							</DropdownMenuItem>
+						) : (
+							<div />
+						)}
 					</DropdownMenuContent>
 				</DropdownMenu>
 			);
@@ -51,7 +69,34 @@ export const columns: ColumnDef<CurrencyType>[] = [
 	},
 	{
 		accessorKey: "chainId",
-		header: "ChainId",
+		cell: ({ row }) => {
+			const pool = row.original;
+			return (
+				<>
+					{pool.chainId === 31337 ? (
+						<>
+							{pool.chainId}
+							<Badge variant="destructive" className="ml-4">
+								testnet
+							</Badge>
+						</>
+					) : (
+						<>{pool.chainId}</>
+					)}
+				</>
+			);
+		},
+		header: ({ column }) => {
+			return (
+				<Button
+					variant="ghost"
+					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+				>
+					ChainId
+					<ArrowUpDown className="ml-2 h-4 w-4" />
+				</Button>
+			);
+		},
 	},
 	{
 		accessorKey: "id",
@@ -59,7 +104,17 @@ export const columns: ColumnDef<CurrencyType>[] = [
 	},
 	{
 		accessorKey: "liquidityDelta",
-		header: "Liquidity Delta",
+		header: ({ column }) => {
+			return (
+				<Button
+					variant="ghost"
+					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+				>
+					Liquidity Delta
+					<ArrowUpDown className="ml-2 h-4 w-4" />
+				</Button>
+			);
+		},
 	},
 	{
 		accessorKey: "poolId",
@@ -71,10 +126,30 @@ export const columns: ColumnDef<CurrencyType>[] = [
 	},
 	{
 		accessorKey: "tickLower",
-		header: "Tick Lower",
+		header: ({ column }) => {
+			return (
+				<Button
+					variant="ghost"
+					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+				>
+					Tick Lower
+					<ArrowUpDown className="ml-2 h-4 w-4" />
+				</Button>
+			);
+		},
 	},
 	{
 		accessorKey: "tickUpper",
-		header: "Tick Upper",
+		header: ({ column }) => {
+			return (
+				<Button
+					variant="ghost"
+					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+				>
+					Tick Upper
+					<ArrowUpDown className="ml-2 h-4 w-4" />
+				</Button>
+			);
+		},
 	},
 ];

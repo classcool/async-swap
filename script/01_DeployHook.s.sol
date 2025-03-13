@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import { RemittanceCSMM } from "../src/RemittanceCSMM.sol";
+import { CSMM } from "../src/CSMM.sol";
 import { FFIHelper } from "./FFIHelper.sol";
 import { console } from "forge-std/Test.sol";
 import { IHooks } from "v4-core/interfaces/IHooks.sol";
@@ -29,10 +29,10 @@ contract DeployHookScript is FFIHelper {
 
     /// @dev compute create2 salt
     (address hookAddress, bytes32 salt) =
-      HookMiner.find(CREATE2_FACTORY, hookFlags, type(RemittanceCSMM).creationCode, abi.encode(address(manager)));
+      HookMiner.find(CREATE2_FACTORY, hookFlags, type(CSMM).creationCode, abi.encode(address(manager)));
 
     /// @dev deploy hook
-    hook = new RemittanceCSMM{ salt: salt }(manager);
+    hook = new CSMM{ salt: salt }(manager);
     assert(address(hook) == hookAddress);
 
     vm.stopBroadcast();

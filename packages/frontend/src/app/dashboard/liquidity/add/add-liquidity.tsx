@@ -23,13 +23,13 @@ import { useEffect, useState } from "react";
 import type { Hex } from "viem";
 import { useWriteContract } from "wagmi";
 import { ERC20Abi } from "../../../../../../indexer/abis/ERC20Abi";
-import { remittanceCsmmAbi } from "../../../../../../indexer/abis/generated";
+import { csmmAbi } from "../../../../../../indexer/abis/generated";
 import type { Pool } from "../../pools/columns";
 
 export default function AddLiquidity() {
-	const [amount0, setAmount0] = useState(undefined);
+	const [amount0, setAmount0] = useState<undefined | null | string | number>();
 	const [pools, setPools] = useState<Pool[]>();
-	const [error, setError] = useState(null);
+	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(true);
 	const [selectPool, setSelectPool] = useState<Pool>();
 	const { data: hash, isPending, writeContract } = useWriteContract();
@@ -65,10 +65,10 @@ export default function AddLiquidity() {
 			fee: selectPool.fee,
 			tickSpacing: selectPool.tickSpacing,
 			hooks: selectPool.hooks as Hex,
-		};
+		} as const; // this equivalent to struct
 
 		writeContract({
-			abi: remittanceCsmmAbi,
+			abi: csmmAbi,
 			address: selectPool.hooks as Hex,
 			functionName: "addLiquidity",
 			args: [poolKey, BigInt(amount0)],
@@ -79,13 +79,16 @@ export default function AddLiquidity() {
 		const endpoint = "http://localhost:42069";
 		const fetchQueryData = async () => {
 			try {
-				fetchData(endpoint, poolsQuery).then(async (r) => {
-					const data = await r.json();
+				fetchData("", "", endpoint, 31337, poolsQuery).then(async (data) => {
 					console.log(data);
-					setPools(data.data.pools.items);
+					setPools(data.pools.items);
 				});
-			} catch (err: any) {
-				setError(err);
+			} catch (err: unknown) {
+				if (err instanceof Error) {
+					setError(err.message);
+				} else {
+					setError("An unknown error occured");
+				}
 			} finally {
 				setLoading(false);
 			}
@@ -116,14 +119,20 @@ export default function AddLiquidity() {
 										<SelectValue placeholder="Select" />
 									</SelectTrigger>
 									<SelectContent position="popper">
-										{pools &&
+										{pools ? (
 											pools.map((pool, index) => {
 												return (
-													<SelectItem key={index} value={index.toString()}>
+													<SelectItem
+														key={pool.chainId + pool.currency0 + pool.currency1}
+														value={index.toString()}
+													>
 														{`${pool.token0.symbol}-${pool.token1.symbol}`}
 													</SelectItem>
 												);
-											})}
+											})
+										) : (
+											<div />
+										)}
 									</SelectContent>
 								</Select>
 							</div>

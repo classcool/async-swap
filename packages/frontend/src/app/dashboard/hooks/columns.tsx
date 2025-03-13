@@ -1,6 +1,7 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -8,8 +9,8 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, Code, Copy, MoreHorizontal } from "lucide-react";
 
 export type HookType = {
 	chainId: number;
@@ -24,18 +25,44 @@ export const columns: ColumnDef<HookType>[] = [
 			return (
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" className="h-8 w-8 p-0">
-							<span className="sr-only">Open menu</span>
-							<MoreHorizontal className="h-4 w-4" />
-						</Button>
+						{pool.hookAddress !==
+						"0x0000000000000000000000000000000000000000" ? (
+							<Button variant="ghost" className="h-8 w-8 p-0">
+								<span className="sr-only">Open menu</span>
+								<MoreHorizontal className="h-4 w-4" />
+							</Button>
+						) : (
+							<div />
+						)}
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
 						<DropdownMenuLabel>Actions</DropdownMenuLabel>
 						<DropdownMenuItem
 							onClick={() => navigator.clipboard.writeText(pool.hookAddress)}
 						>
-							Copy Hook Address
+							<>
+								<Copy />
+								Copy Address
+							</>
 						</DropdownMenuItem>
+						{pool.chainId === 130 &&
+						pool.hookAddress !==
+							"0x0000000000000000000000000000000000000000" ? (
+							<DropdownMenuItem
+								onClick={() =>
+									window.open(
+										`https://uniscan.xyz/address/${pool.hookAddress}#code`,
+									)
+								}
+							>
+								<>
+									<Code />
+									View Code
+								</>
+							</DropdownMenuItem>
+						) : (
+							<div />
+						)}
 					</DropdownMenuContent>
 				</DropdownMenu>
 			);
@@ -43,7 +70,34 @@ export const columns: ColumnDef<HookType>[] = [
 	},
 	{
 		accessorKey: "chainId",
-		header: "ChainId",
+		cell: ({ row }) => {
+			const pool = row.original;
+			return (
+				<>
+					{pool.chainId === 31337 ? (
+						<>
+							{pool.chainId}
+							<Badge variant="destructive" className="ml-4">
+								testnet
+							</Badge>
+						</>
+					) : (
+						<>{pool.chainId}</>
+					)}
+				</>
+			);
+		},
+		header: ({ column }) => {
+			return (
+				<Button
+					variant="ghost"
+					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+				>
+					ChainId
+					<ArrowUpDown className="ml-2 h-4 w-4" />
+				</Button>
+			);
+		},
 	},
 	{
 		accessorKey: "hookAddress",
