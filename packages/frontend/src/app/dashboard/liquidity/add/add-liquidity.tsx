@@ -27,9 +27,9 @@ import { csmmAbi } from "../../../../../../indexer/abis/generated";
 import type { Pool } from "../../pools/columns";
 
 export default function AddLiquidity() {
-	const [amount0, setAmount0] = useState(undefined);
+	const [amount0, setAmount0] = useState<undefined | null | string | number>();
 	const [pools, setPools] = useState<Pool[]>();
-	const [error, setError] = useState(null);
+	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(true);
 	const [selectPool, setSelectPool] = useState<Pool>();
 	const { data: hash, isPending, writeContract } = useWriteContract();
@@ -83,8 +83,12 @@ export default function AddLiquidity() {
 					console.log(data);
 					setPools(data.pools.items);
 				});
-			} catch (err) {
-				setError(err);
+			} catch (err: unknown) {
+				if (err instanceof Error) {
+					setError(err.message);
+				} else {
+					setError("An unknown error occured");
+				}
 			} finally {
 				setLoading(false);
 			}
