@@ -8,7 +8,6 @@ import {
 	BreadcrumbList,
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
 	SidebarInset,
@@ -83,7 +82,7 @@ export default function DashboardLayout({
 					</div>
 					<div className="flex flex-1 h-8 items-center flex-row-reverse">
 						<div className="flex w-full flex-row-reverse pr-4">
-								<CommandDialogDemo />
+							<CommandDialogDemo />
 						</div>
 					</div>
 				</header>
