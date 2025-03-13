@@ -22,7 +22,6 @@ import {
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { Armchair } from "lucide-react";
 import { useMemo, useState } from "react";
 import Loading from "./loading";
 
@@ -59,7 +58,7 @@ export function DataTable<TData, TValue>({
 
 	const endpoint = "http://localhost:42069";
 
-	const { data, isLoading, error } = useQuery({
+	const { data, isLoading, isFetching, error } = useQuery({
 		queryKey: [keyName, cursor, direction],
 		queryFn: () => fetchData(cursor, direction, endpoint, "", queryFetcher),
 		placeholderData: keepPreviousData,
@@ -80,7 +79,6 @@ export function DataTable<TData, TValue>({
 		rowCount: 50,
 	});
 
-	if (isLoading) return <Loading />;
 	return (
 		<div className="overflow-x-auto">
 			<Table>
@@ -102,40 +100,47 @@ export function DataTable<TData, TValue>({
 						</TableRow>
 					))}
 				</TableHeader>
-				<TableBody>
-					{table.getRowModel().rows?.length ? (
-						table.getRowModel().rows.map((row) => (
-							<TableRow
-								key={row.id}
-								data-state={row.getIsSelected() && "selected"}
-							>
-								{row.getVisibleCells().map((cell) => (
-									<TableCell key={cell.id}>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
+				{isLoading || isFetching ? (
+					<Loading />
+				) : (
+					<TableBody>
+						{table.getRowModel().rows?.length ? (
+							table.getRowModel().rows.map((row) => (
+								<TableRow
+									key={row.id}
+									data-state={row.getIsSelected() && "selected"}
+								>
+									{row.getVisibleCells().map((cell) => (
+										<TableCell key={cell.id}>
+											{flexRender(
+												cell.column.columnDef.cell,
+												cell.getContext(),
+											)}
+										</TableCell>
+									))}
+								</TableRow>
+							))
+						) : (
+							<TableRow>
+								{error ? (
+									<TableCell
+										colSpan={columns.length}
+										className="h-24 text-center"
+									>
+										{error.message}
 									</TableCell>
-								))}
+								) : (
+									<TableCell
+										colSpan={columns.length}
+										className="h-24 text-center"
+									>
+										No results.
+									</TableCell>
+								)}
 							</TableRow>
-						))
-					) : (
-						<TableRow>
-							{error ? (
-								<TableCell
-									colSpan={columns.length}
-									className="h-24 text-center"
-								>
-									{error.message}
-								</TableCell>
-							) : (
-								<TableCell
-									colSpan={columns.length}
-									className="h-24 text-center"
-								>
-									No results.
-								</TableCell>
-							)}
-						</TableRow>
-					)}
-				</TableBody>
+						)}
+					</TableBody>
+				)}
 			</Table>
 			<div className="flex items-center justify-end space-x-2 py-4">
 				<Button
