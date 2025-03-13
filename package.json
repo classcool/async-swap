@@ -5,6 +5,14 @@
     "packages/frontend",
     "packages/indexer"
   ],
+  "scripts": {
+    "build": "cd packages/frontend && bun run build",
+    "dev:ui": "cd packages/frontend && bun run dev",
+    "dev:db": "cd packages/frontend && bun run dev",
+    "start:ui": "cd packages/frontend && bun run start",
+    "start:db": "cd packages/indexer && bun run start",
+    "lint": "biome lint"
+  },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@types/bun": "latest"
