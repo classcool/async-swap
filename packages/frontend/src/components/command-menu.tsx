@@ -170,14 +170,12 @@ export function CommandDialogDemo() {
 										return (
 											<CommandItem
 												key={item.title}
-												onSelect={() => 
-												{
-														handleSelect(item.url)
-													setOpen(false)
-													}
-												}
+												onSelect={() => {
+													handleSelect(item.url);
+													setOpen(false);
+												}}
 											>
-												{item?.icon ? <item.icon /> : <Circle />}
+												{"icon" in item ? <item.icon /> : <Circle />}
 												<span>{item.title}</span>
 											</CommandItem>
 										);
