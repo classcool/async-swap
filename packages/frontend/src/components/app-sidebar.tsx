@@ -1,19 +1,5 @@
 "use client";
 
-import type * as React from "react";
-import {
-	BookOpen,
-	WavesLadder,
-	LifeBuoy,
-	Send,
-	Settings2,
-	LayoutDashboard,
-	Waves,
-	Unplug,
-	ChartCandlestick,
-	KeySquare,
-} from "lucide-react";
-import Link from "next/link";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
@@ -26,8 +12,24 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar";
+import {
+	BookOpen,
+	ChartCandlestick,
+	KeySquare,
+	LayoutDashboard,
+	LifeBuoy,
+	Send,
+	Settings2,
+	Unplug,
+	Waves,
+	WavesLadder,
+} from "lucide-react";
+import Link from "next/link";
+import type React from "react";
+import { useEffect } from "react";
 
-const data = {
+export const data = {
 	user: {
 		name: "shadcn",
 		email: "m@example.com",
@@ -132,6 +134,19 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+	const { toggleSidebar } = useSidebar();
+
+	useEffect(() => {
+		const down = (e: KeyboardEvent) => {
+			if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
+				e.preventDefault();
+				toggleSidebar();
+			}
+		};
+
+		document.addEventListener("keydown", down);
+		return () => document.removeEventListener("keydown", down);
+	}, [toggleSidebar]);
 	return (
 		<Sidebar variant="inset" {...props}>
 			<SidebarHeader>
