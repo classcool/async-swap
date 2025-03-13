@@ -8,7 +8,9 @@ export function getConfig() {
 		connectors: [
 			injected(),
 			coinbaseWallet(),
-			walletConnect({ projectId: process.env?.NEXT_PUBLIC_WC_PROJECT_ID as string}),
+			walletConnect({
+				projectId: process.env?.NEXT_PUBLIC_WC_PROJECT_ID as string,
+			}),
 		],
 		storage: createStorage({
 			storage: cookieStorage,
