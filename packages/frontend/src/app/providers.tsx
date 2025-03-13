@@ -23,9 +23,7 @@ export function Providers(props: {
 		>
 			<WagmiProvider config={config} initialState={props.initialState}>
 				<QueryClientProvider client={queryClient}>
-					<TooltipProvider >
-					{props.children}
-				</TooltipProvider>
+					<TooltipProvider>{props.children}</TooltipProvider>
 				</QueryClientProvider>
 			</WagmiProvider>
 		</ThemeProvider>
