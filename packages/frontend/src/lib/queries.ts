@@ -37,7 +37,6 @@ export function hooksQuery(cursor: string, direction: PageDirection) {
 	return `
 	query MyQuery($cursor: String, $chainId: Int) {
 		hooks ${opts} {
-			totalCount
 			items {
 				chainId
 				hookAddress
@@ -63,7 +62,6 @@ export function currencysQuery(cursor: string, direction: PageDirection) {
 	return `
 	query MyQuery($cursor: String, $chainId: Int) {
 		currencys ${opts} {
-			totalCount
 			items {
 				address
 				chainId
@@ -92,7 +90,6 @@ export function poolsQuery(cursor: string, direction: PageDirection) {
 	return `
 	query MyQuery($cursor: String, $chainId: Int) {
     pools ${opts} {
-      totalCount
       items {
         chainId
         currency1
@@ -135,7 +132,6 @@ export function liquiditysQuery(cursor: string, direction: PageDirection) {
 	return `
 	query MyQuery($cursor: String, $chainId: Int) {
 		liquiditys ${opts} {
-			totalCount
 			items {
 				chainId
 				id
@@ -167,7 +163,6 @@ export function operatorsQuery(cursor: string, direction: PageDirection) {
 	return `
 	query MyQuery($cursor: String, $chainId: Int) {
 		operators ${opts} {
-			totalCount
 			items {
 				approved
 				chainId
