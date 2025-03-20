@@ -57,7 +57,7 @@ export default function DashboardLayout({
 								<SidebarTrigger className="-ml-1" />
 							</TooltipTrigger>
 							<TooltipContent className="flex text-xs">
-								Open Side Panel ⌘J
+								⌘J Open Side Panel
 							</TooltipContent>
 						</Tooltip>
 						<Separator orientation="vertical" className="mr-2 h-4" />
