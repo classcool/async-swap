@@ -22,8 +22,8 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import type { Hex } from "viem";
 import { useWriteContract } from "wagmi";
-import { ERC20Abi } from "../../../../../../indexer/abis/ERC20Abi";
-import { csmmAbi } from "../../../../../../indexer/abis/generated";
+import { ERC20Abi } from "../../../../../abis/ERC20Abi";
+import { csmmAbi } from "../../../../../abis/generated";
 import type { Pool } from "../../pools/columns";
 
 export default function AddLiquidity() {
