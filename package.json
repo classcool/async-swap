@@ -5,6 +5,15 @@
     "packages/frontend",
     "packages/indexer"
   ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:db\" \"npm run dev:ui\"",
+    "dev:ui": "cd packages/frontend && bun run dev",
+    "dev:db": "cd packages/indexer && bun run dev",
+    "start": "concurrently \"npm run start:db\" \"npm run start:ui\"",
+    "start:ui": "cd packages/frontend && bun run build && bun run start",
+    "start:db": "cd packages/indexer && bun run start",
+    "lint": "biome lint"
+  },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@types/bun": "latest"
@@ -12,5 +21,8 @@
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "concurrently": "^9.1.2"
+  }
 }
