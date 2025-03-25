@@ -1,4 +1,4 @@
-import { index, relations, primaryKey, onchainTable } from "ponder";
+import { index, onchainTable, primaryKey, relations } from "ponder";
 
 export const user = onchainTable("user", (t) => ({
 	sender: t.hex().notNull().primaryKey(),
@@ -112,9 +112,17 @@ export const userRelations = relations(user, ({ one, many }) => ({
 	}),
 }));
 
+export const hookRelations = relations(hook, ({ many }) => ({
+	pools: many(pool),
+}));
+
 export const poolRelations = relations(pool, ({ one, many }) => ({
 	liquidity: many(liquidity),
 	swap: many(swap),
+	hook: one(hook, {
+		fields: [pool.hooks],
+		references: [hook.hookAddress],
+	}),
 	token0: one(currency, {
 		fields: [pool.currency0],
 		references: [currency.address],
