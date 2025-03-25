@@ -2,15 +2,12 @@
   "name": "hook-starter",
   "module": "index.ts",
   "workspaces": [
-    "packages/frontend",
     "packages/indexer"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev:db\" \"npm run dev:ui\"",
-    "dev:ui": "cd packages/frontend && bun run dev",
+    "dev": "bun run dev:db",
     "dev:db": "cd packages/indexer && bun run dev",
-    "start": "concurrently \"npm run start:db\" \"npm run start:ui\"",
-    "start:ui": "cd packages/frontend && bun run build && bun run start",
+    "start": "bun run start:db",
     "start:db": "cd packages/indexer && bun run start",
     "lint": "biome lint"
   },
