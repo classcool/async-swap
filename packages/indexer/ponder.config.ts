@@ -7,13 +7,15 @@ import { PoolManagerAbi } from "./abis/PoolManagerAbi";
 import { counterHookAbi, csmmAbi } from "./abis/generated";
 
 const poolManagerAddress = getAddress(
-	DeployPoolManager.transactions[0]?.contractAddress,
+	DeployPoolManager.transactions[0]?.contractAddress as Hex,
 );
 const poolManagerStartBlock = hexToNumber(
 	DeployPoolManager.receipts[0]?.blockNumber as Hex,
 );
 
-const hookAddress = getAddress(DeployHook.transactions[0]?.contractAddress);
+const hookAddress = getAddress(
+	DeployHook.transactions[0]?.contractAddress as Hex,
+);
 const hookStartBlock = hexToNumber(DeployHook.receipts[0]?.blockNumber as Hex);
 
 export default createConfig({
@@ -23,10 +25,6 @@ export default createConfig({
 			transport: http("http://127.0.0.1:8545"),
 			disableCache: true,
 		},
-		unichain: {
-			chainId: 130,
-			transport: http(process.env.PONDER_RPC_URL_130),
-		},
 	},
 	contracts: {
 		PoolManager: {
@@ -34,10 +32,6 @@ export default createConfig({
 				anvil: {
 					address: poolManagerAddress,
 					startBlock: poolManagerStartBlock,
-				},
-				unichain: {
-					address: "0x1f98400000000000000000000000000000000004",
-					startBlock: 0,
 				},
 			},
 			abi: PoolManagerAbi,
