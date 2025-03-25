@@ -7,44 +7,74 @@ ponder.on("PoolManager:Initialize", async ({ event, context }) => {
 	let name0: string;
 	let symbol0: string;
 	let decimals0: number;
+	let name1: string;
+	let symbol1: string;
+	let decimals1: number;
 	if (event.args.currency0 === "0x0000000000000000000000000000000000000000") {
 		name0 = "Ether";
 		symbol0 = "ETH";
 		decimals0 = 18;
 	} else {
-		name0 = await context.client.readContract({
+		try {
+			name0 = await context.client.readContract({
+				abi: ERC20Abi,
+				address: event.args.currency0,
+				functionName: "name",
+			});
+		} catch (error) {
+			name0 = "Unknown";
+		}
+
+		try {
+			symbol0 = await context.client.readContract({
+				abi: ERC20Abi,
+				address: event.args.currency0,
+				functionName: "symbol",
+			});
+		} catch (error) {
+			symbol0 = "Unknown";
+		}
+
+		try {
+			decimals0 = await context.client.readContract({
+				abi: ERC20Abi,
+				address: event.args.currency0,
+				functionName: "decimals",
+			});
+		} catch (error) {
+			decimals0 = 18;
+		}
+	}
+
+	try {
+		name1 = await context.client.readContract({
 			abi: ERC20Abi,
-			address: event.args.currency0,
+			address: event.args.currency1,
 			functionName: "name",
 		});
+	} catch (error) {
+		name1 = "UNKNOWN";
+	}
 
-		symbol0 = await context.client.readContract({
+	try {
+		symbol1 = await context.client.readContract({
 			abi: ERC20Abi,
-			address: event.args.currency0,
+			address: event.args.currency1,
 			functionName: "symbol",
 		});
-		decimals0 = await context.client.readContract({
+	} catch (error) {
+		symbol1 = "UNKNOWN";
+	}
+	try {
+		decimals1 = await context.client.readContract({
 			abi: ERC20Abi,
-			address: event.args.currency0,
+			address: event.args.currency1,
 			functionName: "decimals",
 		});
-	}
-	const name1 = await context.client.readContract({
-		abi: ERC20Abi,
-		address: event.args.currency1,
-		functionName: "name",
-	});
+	} catch (error) {
+		decimals1 = 18;
 
-	const symbol1 = await context.client.readContract({
-		abi: ERC20Abi,
-		address: event.args.currency1,
-		functionName: "symbol",
-	});
-	const decimals1 = await context.client.readContract({
-		abi: ERC20Abi,
-		address: event.args.currency1,
-		functionName: "decimals",
-	});
+	}
 
 	await context.db
 		.insert(schema.currency)
