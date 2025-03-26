@@ -32,7 +32,7 @@ contract CsmmTest is SetupDeploy {
     token1.transfer(_user, 1 ether);
   }
 
-  function test_swap() public userAction {
+  function test_asyncSwapOrder() public userAction {
     int256 amount = 12;
     uint256 userCurrency0Balance = currency0.balanceOf(user);
     uint256 userCurrency1Balance = currency1.balanceOf(user);
