@@ -33,9 +33,12 @@ contract CsmmTest is SetupDeploy {
   }
 
   function test_swap() public userAction {
-    int256 amount = 12;
+		int256 amount = 12;
+    uint256 userCurrency0Balance = currency0.balanceOf(user);
+    uint256 userCurrency1Balance = currency1.balanceOf(user);
+    bool zeroForOne = false;
     IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
-      zeroForOne: true,
+      zeroForOne: zeroForOne,
       amountSpecified: -int256(amount),
       sqrtPriceLimitX96: uint160(2 ** 96 + 1)
     });
@@ -43,10 +46,23 @@ contract CsmmTest is SetupDeploy {
       PoolSwapTest.TestSettings({ takeClaims: false, settleUsingBurn: false });
 
     bytes memory hookData =
-      abi.encode(CSMM.AsyncOrder({ poolId: poolId, owner: user, zeroForOne: true, amountIn: amount }));
+      abi.encode(CSMM.AsyncOrder({ poolId: poolId, owner: user, zeroForOne: zeroForOne, amountIn: amount }));
 
-    token0.approve(address(router), uint256(amount));
+    if (zeroForOne) {
+      token0.approve(address(router), uint256(amount));
+    } else {
+      token1.approve(address(router), uint256(amount));
+    }
+
     router.swap(key, params, testSettings, hookData);
+
+    if (zeroForOne) {
+      assertEq(currency0.balanceOf(user), userCurrency0Balance - uint256(amount));
+      assertEq(currency1.balanceOf(user), userCurrency1Balance);
+    } else {
+      assertEq(currency1.balanceOf(user), userCurrency1Balance - uint256(amount));
+      assertEq(currency0.balanceOf(user), userCurrency0Balance);
+    }
   }
 
 }
