@@ -5,6 +5,23 @@ export const user = onchainTable("user", (t) => ({
 	chainId: t.integer().notNull(),
 }));
 
+export const order = onchainTable(
+	"order",
+	(t) => ({
+		chainId: t.integer().notNull(),
+		owner: t.hex().notNull(),
+		nonce: t.bigint().notNull(),
+		poolId: t.hex().notNull(),
+		amountIn: t.bigint().notNull(),
+		zeroForOne: t.boolean().notNull(),
+	}),
+	(table) => ({
+		pk: primaryKey({
+			columns: [table.chainId, table.owner, table.poolId, table.nonce],
+		}),
+	}),
+);
+
 export const currency = onchainTable("currency", (t) => ({
 	address: t.hex().notNull().primaryKey(),
 	name: t.text().notNull().default(""),
