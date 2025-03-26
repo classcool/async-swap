@@ -33,7 +33,7 @@ contract CsmmTest is SetupDeploy {
   }
 
   function test_swap() public userAction {
-		int256 amount = 12;
+    int256 amount = 12;
     uint256 userCurrency0Balance = currency0.balanceOf(user);
     uint256 userCurrency1Balance = currency1.balanceOf(user);
     bool zeroForOne = false;
