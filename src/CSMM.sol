@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.26;
 
+import { Router } from "./router.sol";
 import { CurrencySettler } from "@uniswap/v4-core/test/utils/CurrencySettler.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { Hooks } from "v4-core/libraries/Hooks.sol";
@@ -41,7 +42,7 @@ contract CSMM is BaseHook {
       afterDonate: false,
       beforeSwapReturnDelta: true, // allow beforeSwap to return a custom delta, for custom ordering
       afterSwapReturnDelta: false,
-      afterAddLiquidityReturnDelta: false,
+      afterAddLiquidityReturnDelta: false, // custom add liquidity
       afterRemoveLiquidityReturnDelta: false
     });
   }
@@ -100,6 +101,7 @@ contract CSMM is BaseHook {
       key.currency1.take(poolManager, address(this), amountInPositive, true);
     }
 
+    //
     AsyncOrder memory order = abi.decode(hookParams, (AsyncOrder));
 
     /// @dev emit event consumed by filler
@@ -112,6 +114,7 @@ contract CSMM is BaseHook {
   /// @dev called by keeper to settle swaps and execute transation orders
   function settleAsyncSwap() external { }
 
+  /// @notice callback from add liquidity.
   function unlockCallback(bytes calldata data) external onlyPoolManager returns (bytes memory) {
     CallbackData memory callbackData = abi.decode(data, (CallbackData));
 
