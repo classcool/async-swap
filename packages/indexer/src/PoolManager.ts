@@ -73,7 +73,6 @@ ponder.on("PoolManager:Initialize", async ({ event, context }) => {
 		});
 	} catch (error) {
 		decimals1 = 18;
-
 	}
 
 	await context.db
