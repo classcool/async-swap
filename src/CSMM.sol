@@ -20,9 +20,12 @@ contract CSMM is BaseHook {
   using PoolIdLibrary for PoolKey;
 
   mapping(address user => uint256 claimable) asyncOrders;
+  mapping(PoolId poolId => mapping(address user => uint256 nonce)) public nonces;
 
   event BeforeAddLiquidity(PoolId poolId, address sender, BalanceDelta liquidityDelta);
-  event BeforeSwap(bytes32 poolId, address owner, bool zeroForOn, int256 amountIn);
+  event BeforeSwap(
+    bytes32 poolId, address owner, bool indexed zeroForOne, int256 indexed amountIn, uint256 indexed nonce
+  );
 
   error AddLiquidityThroughHook();
 
@@ -95,17 +98,20 @@ contract CSMM is BaseHook {
     BeforeSwapDelta beforeSwapDelta = toBeforeSwapDelta(int128(-params.amountSpecified), 0);
     uint256 amountInPositive = uint256(-params.amountSpecified);
 
+    /// @notice increase async order nonces
+    AsyncOrder memory order = abi.decode(hookParams, (AsyncOrder));
+    nonces[order.poolId][order.owner]++;
+
     if (params.zeroForOne) {
       key.currency0.take(poolManager, address(this), amountInPositive, true);
     } else {
       key.currency1.take(poolManager, address(this), amountInPositive, true);
     }
 
-    //
-    AsyncOrder memory order = abi.decode(hookParams, (AsyncOrder));
-
     /// @dev emit event consumed by filler
-    emit BeforeSwap(PoolId.unwrap(order.poolId), order.owner, order.zeroForOne, order.amountIn);
+    emit BeforeSwap(
+      PoolId.unwrap(order.poolId), order.owner, order.zeroForOne, order.amountIn, nonces[order.poolId][order.owner]
+    );
 
     return (this.beforeSwap.selector, beforeSwapDelta, 0);
   }
