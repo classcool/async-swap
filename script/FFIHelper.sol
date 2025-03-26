@@ -10,20 +10,19 @@ contract FFIHelper is Script {
 
   using stdJson for string;
 
-  function _getDeployedPoolManager() internal view returns (IPoolManager) {
+  function _getDeployedPoolManager() internal view returns (address poolManagerAddress) {
     string memory root = vm.projectRoot();
     string memory path = string.concat(root, "/broadcast/00_DeployPoolManager.s.sol/31337/run-latest.json");
     string memory json = vm.readFile(path);
-    address poolManagerAddress = json.readAddress(".transactions[0].contractAddress");
-    return IPoolManager(poolManagerAddress);
+    poolManagerAddress = json.readAddress(".transactions[0].contractAddress");
   }
 
-  function _getDeployedHook() internal view returns (IHooks) {
+  function _getDeployedHook() internal view returns (address hookAddress, address routerAddress) {
     string memory root = vm.projectRoot();
     string memory path = string.concat(root, "/broadcast/01_DeployHook.s.sol/31337/run-latest.json");
     string memory json = vm.readFile(path);
-    address hookAddresss = json.readAddress(".transactions[0].contractAddress");
-    return IHooks(hookAddresss);
+    hookAddress = json.readAddress(".transactions[0].contractAddress");
+    routerAddress = json.readAddress(".transactions[1].contractAddress");
   }
 
   function _getPoolTopics() internal view returns (uint256[] memory) {
