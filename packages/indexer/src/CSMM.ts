@@ -41,7 +41,7 @@ ponder.on("CsmmHook:BeforeSwap", async ({ event, context }) => {
 		chainId: context.network.chainId,
 		owner: event.args.owner,
 		nonce: event.args.nonce,
-		poolId: toHex(event.args.poolId),
+		poolId: event.args.poolId,
 		zeroForOne: event.args.zeroForOne,
 		amountIn: BigInt(event.args.amountIn),
 	});
