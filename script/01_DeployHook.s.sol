@@ -7,6 +7,8 @@ import { console } from "forge-std/Test.sol";
 import { IHooks } from "v4-core/interfaces/IHooks.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { Hooks } from "v4-core/libraries/Hooks.sol";
+
+import { PoolSwapTest } from "v4-core/test/PoolSwapTest.sol";
 import { HookMiner } from "v4-periphery/src/utils/HookMiner.sol";
 
 /// @notice Deploys Hook contract
@@ -14,9 +16,10 @@ contract DeployHookScript is FFIHelper {
 
   IPoolManager manager;
   IHooks public hook;
+  PoolSwapTest router;
 
   function setUp() public {
-    manager = _getDeployedPoolManager();
+    manager = IPoolManager(_getDeployedPoolManager());
     console.log(address(manager));
   }
 
@@ -34,6 +37,8 @@ contract DeployHookScript is FFIHelper {
     /// @dev deploy hook
     hook = new CSMM{ salt: salt }(manager);
     assert(address(hook) == hookAddress);
+
+    router = new PoolSwapTest(manager);
 
     vm.stopBroadcast();
   }
