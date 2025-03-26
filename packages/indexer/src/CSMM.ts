@@ -6,7 +6,7 @@ import { WebSocketServer } from "ws";
 const wss = new WebSocketServer({ port: 8080 });
 const clients: WebSocket[] = [];
 
-wss.on("connection", (ws) => {
+wss.on("connection", (ws: WebSocket) => {
 	clients.push(ws);
 });
 
@@ -37,5 +37,12 @@ ponder.on("CsmmHook:BeforeAddLiquidity", async ({ event, context }) => {
 });
 
 ponder.on("CsmmHook:BeforeSwap", async ({ event, context }) => {
-	console.log(event.args);
+	await context.db.insert(schema.order).values({
+		chainId: context.network.chainId,
+		owner: event.args.owner,
+		nonce: event.args.nonce,
+		poolId: toHex(event.args.poolId),
+		zeroForOne: event.args.zeroForOne,
+		amountIn: BigInt(event.args.amountIn),
+	});
 });
