@@ -24,8 +24,9 @@ contract IntializePool is FFIHelper {
   int24 TICK_SPACING = 60;
 
   function setUp() public {
-    manager = _getDeployedPoolManager();
-    hook = _getDeployedHook();
+    manager = IPoolManager(_getDeployedPoolManager());
+    (address _hook,) = _getDeployedHook();
+    hook = IHooks(_hook);
     console.log(address(manager));
     console.log(address(hook));
   }
