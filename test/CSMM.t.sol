@@ -8,9 +8,9 @@ import { Currency, IHooks, IPoolManager } from "v4-core/interfaces/IPoolManager.
 import { PoolSwapTest } from "v4-core/test/PoolSwapTest.sol";
 import { PoolKey } from "v4-core/types/PoolKey.sol";
 
-/// @title A counter hook test contract
-/// @notice Use as example only for project setup
-contract CsmmTrst is SetupDeploy {
+/// @title A Test contract
+/// @notice CSMM tests
+contract CsmmTest is SetupDeploy {
 
   PoolSwapTest router;
   address user = makeAddr("user");
