@@ -1,4 +1,4 @@
-import { index, onchainTable, primaryKey, relations } from "ponder";
+import { index, onchainTable, primaryKey, relations, timestamp } from "ponder";
 
 export const user = onchainTable("user", (t) => ({
 	sender: t.hex().notNull().primaryKey(),
@@ -6,6 +6,10 @@ export const user = onchainTable("user", (t) => ({
 	totalSwaps: t.integer().notNull().default(0),
 	totalLiquiditys: t.integer().notNull().default(0),
 	totalTransfers: t.integer().notNull().default(0),
+	totalInitialized: t.integer().notNull().default(0),
+	timestamp: t
+		.bigint()
+		.default(BigInt(Math.floor(new Date().getTime() / 1000))),
 }));
 
 export const order = onchainTable(
@@ -17,10 +21,19 @@ export const order = onchainTable(
 		poolId: t.hex().notNull(),
 		amountIn: t.bigint().notNull(),
 		zeroForOne: t.boolean().notNull(),
+		timestamp: t
+			.bigint()
+			.default(BigInt(Math.floor(new Date().getTime() / 1000))),
 	}),
 	(table) => ({
 		pk: primaryKey({
-			columns: [table.chainId, table.owner, table.poolId, table.nonce],
+			columns: [
+				table.chainId,
+				table.owner,
+				table.poolId,
+				table.zeroForOne,
+				table.nonce,
+			],
 		}),
 	}),
 );
@@ -36,6 +49,9 @@ export const currency = onchainTable("currency", (t) => ({
 export const hook = onchainTable("hook", (t) => ({
 	hookAddress: t.hex().notNull().primaryKey(),
 	chainId: t.integer().notNull(),
+	timestamp: t
+		.bigint()
+		.default(BigInt(Math.floor(new Date().getTime() / 1000))),
 }));
 
 export const pool = onchainTable("pool", (t) => ({
@@ -48,18 +64,32 @@ export const pool = onchainTable("pool", (t) => ({
 	sqrtPriceX96: t.bigint().notNull(),
 	tick: t.integer().notNull(),
 	chainId: t.integer().notNull(),
+	timestamp: t
+		.bigint()
+		.default(BigInt(Math.floor(new Date().getTime() / 1000))),
 }));
 
-export const liquidity = onchainTable("liquidity", (t) => ({
-	id: t.hex().notNull().primaryKey(),
-	poolId: t.hex().notNull(),
-	sender: t.hex().notNull(),
-	tickLower: t.integer().notNull(),
-	tickUpper: t.integer().notNull(),
-	liquidityDelta: t.bigint().notNull(),
-	salt: t.hex().notNull(),
-	chainId: t.integer().notNull(),
-}));
+export const liquidity = onchainTable(
+	"liquidity",
+	(t) => ({
+		id: t.hex().notNull(),
+		poolId: t.hex().notNull(),
+		sender: t.hex().notNull(),
+		tickLower: t.integer().notNull(),
+		tickUpper: t.integer().notNull(),
+		liquidityDelta: t.bigint().notNull(),
+		salt: t.hex().notNull(),
+		chainId: t.integer().notNull(),
+		timestamp: t
+			.bigint()
+			.default(BigInt(Math.floor(new Date().getTime() / 1000))),
+	}),
+	(table) => ({
+		pk: primaryKey({
+			columns: [table.id, table.poolId, table.sender, table.chainId],
+		}),
+	}),
+);
 
 export const operator = onchainTable(
 	"operator",
@@ -68,6 +98,9 @@ export const operator = onchainTable(
 		operator: t.hex().notNull(),
 		approved: t.boolean(),
 		chainId: t.integer().notNull(),
+		timestamp: t
+			.bigint()
+			.default(BigInt(Math.floor(new Date().getTime() / 1000))),
 	}),
 
 	(table) => ({
@@ -81,7 +114,7 @@ export const operator = onchainTable(
 export const swap = onchainTable(
 	"swap",
 	(t) => ({
-		id: t.text().primaryKey(),
+		id: t.text().notNull(),
 		poolId: t.hex().notNull(),
 		sender: t.hex().notNull(),
 		amount0: t.bigint().notNull(),
@@ -91,8 +124,12 @@ export const swap = onchainTable(
 		tick: t.integer().notNull(),
 		fee: t.integer().notNull(),
 		chainId: t.integer().notNull(),
+		timestamp: t
+			.bigint()
+			.default(BigInt(Math.floor(new Date().getTime() / 1000))),
 	}),
 	(table) => ({
+		pk: primaryKey({ columns: [table.id, table.poolId, table.sender] }),
 		poolIdIndex: index().on(table.poolId),
 		senderIndex: index().on(table.sender),
 		chainIdIndex: index().on(table.chainId),
@@ -102,15 +139,27 @@ export const swap = onchainTable(
 export const transfer = onchainTable(
 	"transfer",
 	(t) => ({
-		id: t.text().notNull().primaryKey(),
+		hash: t.text().notNull(),
 		caller: t.hex().notNull(),
 		from: t.hex().notNull(),
 		to: t.hex().notNull(),
 		erc6909Id: t.hex().notNull(),
 		amount: t.bigint().notNull(),
 		chainId: t.integer().notNull(),
+		timestamp: t
+			.bigint()
+			.default(BigInt(Math.floor(new Date().getTime() / 1000))),
 	}),
 	(table) => ({
+		pk: primaryKey({
+			columns: [
+				table.chainId,
+				table.hash,
+				table.caller,
+				table.to,
+				table.erc6909Id,
+			],
+		}),
 		callerIndex: index().on(table.caller),
 		fromIndex: index().on(table.from),
 		toIndex: index().on(table.to),
