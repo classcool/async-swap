@@ -153,11 +153,11 @@ export const transfer = onchainTable(
 	(table) => ({
 		pk: primaryKey({
 			columns: [
-				table.chainId,
 				table.hash,
-				table.caller,
-				table.to,
+				table.chainId,
+				table.from,
 				table.erc6909Id,
+				table.to,
 			],
 		}),
 		callerIndex: index().on(table.caller),
