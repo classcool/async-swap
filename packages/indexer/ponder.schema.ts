@@ -46,28 +46,40 @@ export const currency = onchainTable("currency", (t) => ({
 	chainId: t.integer().notNull(),
 }));
 
-export const hook = onchainTable("hook", (t) => ({
-	hookAddress: t.hex().notNull().primaryKey(),
-	chainId: t.integer().notNull(),
-	timestamp: t
-		.bigint()
-		.default(BigInt(Math.floor(new Date().getTime() / 1000))),
-}));
+export const hook = onchainTable(
+	"hook",
+	(t) => ({
+		hookAddress: t.hex().notNull(),
+		chainId: t.integer().notNull(),
+		timestamp: t
+			.bigint()
+			.default(BigInt(Math.floor(new Date().getTime() / 1000))),
+	}),
+	(table) => ({
+		pk: primaryKey({ columns: [table.hookAddress, table.chainId] }),
+	}),
+);
 
-export const pool = onchainTable("pool", (t) => ({
-	poolId: t.hex().primaryKey(),
-	currency0: t.hex().notNull(),
-	currency1: t.hex().notNull(),
-	fee: t.integer().notNull(),
-	tickSpacing: t.integer().notNull(),
-	hooks: t.hex().notNull(),
-	sqrtPriceX96: t.bigint().notNull(),
-	tick: t.integer().notNull(),
-	chainId: t.integer().notNull(),
-	timestamp: t
-		.bigint()
-		.default(BigInt(Math.floor(new Date().getTime() / 1000))),
-}));
+export const pool = onchainTable(
+	"pool",
+	(t) => ({
+		poolId: t.hex().notNull(),
+		currency0: t.hex().notNull(),
+		currency1: t.hex().notNull(),
+		fee: t.integer().notNull(),
+		tickSpacing: t.integer().notNull(),
+		hooks: t.hex().notNull(),
+		sqrtPriceX96: t.bigint().notNull(),
+		tick: t.integer().notNull(),
+		chainId: t.integer().notNull(),
+		timestamp: t
+			.bigint()
+			.default(BigInt(Math.floor(new Date().getTime() / 1000))),
+	}),
+	(table) => ({
+		pk: primaryKey({ columns: [table.poolId, table.chainId] }),
+	}),
+);
 
 export const liquidity = onchainTable(
 	"liquidity",
@@ -86,7 +98,13 @@ export const liquidity = onchainTable(
 	}),
 	(table) => ({
 		pk: primaryKey({
-			columns: [table.id, table.poolId, table.sender, table.chainId],
+			columns: [
+				table.poolId,
+				table.sender,
+				table.chainId,
+				table.tickLower,
+				table.tickUpper,
+			],
 		}),
 	}),
 );
@@ -129,7 +147,9 @@ export const swap = onchainTable(
 			.default(BigInt(Math.floor(new Date().getTime() / 1000))),
 	}),
 	(table) => ({
-		pk: primaryKey({ columns: [table.id, table.poolId, table.sender] }),
+		pk: primaryKey({
+			columns: [table.chainId, table.id, table.poolId, table.sender],
+		}),
 		poolIdIndex: index().on(table.poolId),
 		senderIndex: index().on(table.sender),
 		chainIdIndex: index().on(table.chainId),
