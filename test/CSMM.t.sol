@@ -6,11 +6,14 @@ import { SetupDeploy } from "./SetupDeploy.sol";
 import { console } from "forge-std/Test.sol";
 import { Currency, IHooks, IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { PoolSwapTest } from "v4-core/test/PoolSwapTest.sol";
+import { CurrencyLibrary } from "v4-core/types/Currency.sol";
 import { PoolKey } from "v4-core/types/PoolKey.sol";
 
 /// @title A Test contract
 /// @notice CSMM tests
 contract CsmmTest is SetupDeploy {
+
+  using CurrencyLibrary for Currency;
 
   PoolSwapTest router;
   address user = makeAddr("user");
@@ -32,11 +35,16 @@ contract CsmmTest is SetupDeploy {
     token1.transfer(_user, 1 ether);
   }
 
-  function test_asyncSwapOrder() public userAction {
-    int256 amount = 12;
+  function testFuzzAsyncSwapOrder(bool zeroForOne, int256 amount) public userAction {
+    vm.assume(amount >= 1);
+    vm.assume(amount <= 1 ether);
+
+    uint256 balance0Before = manager.balanceOf(address(hook), currency0.toId());
+    uint256 balance1Before = manager.balanceOf(address(hook), currency0.toId());
+
     uint256 userCurrency0Balance = currency0.balanceOf(user);
     uint256 userCurrency1Balance = currency1.balanceOf(user);
-    bool zeroForOne = false;
+
     IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
       zeroForOne: zeroForOne,
       amountSpecified: -int256(amount),
@@ -62,6 +70,12 @@ contract CsmmTest is SetupDeploy {
     } else {
       assertEq(currency1.balanceOf(user), userCurrency1Balance - uint256(amount));
       assertEq(currency0.balanceOf(user), userCurrency0Balance);
+    }
+
+    if (zeroForOne) {
+      assertEq(manager.balanceOf(address(hook), currency0.toId()), balance0Before + uint256(amount));
+    } else {
+      assertEq(manager.balanceOf(address(hook), currency1.toId()), balance1Before + uint256(amount));
     }
   }
 
