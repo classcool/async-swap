@@ -198,6 +198,7 @@ ponder.on("PoolManager:Swap", async ({ event, context }) => {
 		.onConflictDoUpdate((row) => ({
 			amount0: row.amount0 + event.args.amount0,
 			amount1: row.amount1 + event.args.amount1,
+			sqrtPrice: event.args.sqrtPriceX96,
 		}));
 
 	await context.db
@@ -270,10 +271,12 @@ ponder.on(
 				chainId: context.network.chainId,
 				timestamp: event.block.timestamp,
 			})
-			.onConflictDoUpdate({
-				liquidityDelta: event.args.liquidityDelta,
+			.onConflictDoUpdate((row) => ({
+				id: event.transaction.hash,
+				liquidityDelta: row.liquidityDelta + event.args.liquidityDelta,
+				salt: event.args.salt,
 				timestamp: event.block.timestamp,
-			});
+			}));
 
 		await context.db
 			.insert(schema.user)
