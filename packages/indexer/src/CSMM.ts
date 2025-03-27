@@ -11,16 +11,23 @@ wss.on("connection", (ws: WebSocket) => {
 });
 
 ponder.on("CsmmHook:BeforeAddLiquidity", async ({ event, context }) => {
-	await context.db.insert(schema.liquidity).values({
-		id: event.transaction.hash,
-		poolId: event.args.poolId,
-		sender: event.args.sender,
-		tickLower: 0,
-		tickUpper: 0,
-		liquidityDelta: event.args.liquidityDelta,
-		salt: toHex(0),
-		chainId: context.network.chainId,
-	});
+	await context.db
+		.insert(schema.liquidity)
+		.values({
+			id: event.transaction.hash,
+			poolId: event.args.poolId,
+			sender: event.args.sender,
+			tickLower: 0,
+			tickUpper: 0,
+			liquidityDelta: event.args.liquidityDelta,
+			salt: toHex(0),
+			chainId: context.network.chainId,
+			timestamp: event.block.timestamp,
+		})
+		.onConflictDoUpdate((row) => ({
+			liquidityDelta: row.liquidityDelta + event.args.liquidityDelta,
+			timestamp: event.block.timestamp,
+		}));
 
 	for (const client of clients) {
 		if (client.readyState === WebSocket.OPEN) {
@@ -37,12 +44,18 @@ ponder.on("CsmmHook:BeforeAddLiquidity", async ({ event, context }) => {
 });
 
 ponder.on("CsmmHook:BeforeSwap", async ({ event, context }) => {
-	await context.db.insert(schema.order).values({
-		chainId: context.network.chainId,
-		owner: event.args.owner,
-		nonce: event.args.nonce,
-		poolId: event.args.poolId,
-		zeroForOne: event.args.zeroForOne,
-		amountIn: BigInt(event.args.amountIn),
-	});
+	await context.db
+		.insert(schema.order)
+		.values({
+			chainId: context.network.chainId,
+			owner: event.args.owner,
+			nonce: event.args.nonce,
+			poolId: event.args.poolId,
+			zeroForOne: event.args.zeroForOne,
+			amountIn: BigInt(event.args.amountIn),
+			timestamp: event.block.timestamp,
+		})
+		.onConflictDoUpdate((row) => ({
+			timestamp: event.block.timestamp,
+		}));
 });
