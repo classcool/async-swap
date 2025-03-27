@@ -143,26 +143,13 @@ ponder.on("PoolManager:Transfer", async ({ event, context }) => {
 	await context.db
 		.insert(schema.user)
 		.values({
-			sender: event.args.to,
+			sender: event.transaction.from,
 			chainId: context.network.chainId,
+			totalTransfers: 1,
 		})
-		.onConflictDoNothing();
-
-	await context.db
-		.insert(schema.user)
-		.values({
-			sender: event.args.from,
-			chainId: context.network.chainId,
-		})
-		.onConflictDoNothing();
-
-	await context.db
-		.insert(schema.user)
-		.values({
-			sender: event.args.caller,
-			chainId: context.network.chainId,
-		})
-		.onConflictDoNothing();
+		.onConflictDoUpdate((row) => ({
+			totalTransfers: row.totalTransfers + 1,
+		}));
 });
 
 ponder.on("PoolManager:Approval", async ({ event, context }) => {
@@ -173,7 +160,7 @@ ponder.on("PoolManager:Swap", async ({ event, context }) => {
 	await context.db.insert(schema.swap).values({
 		id: event.log.id,
 		poolId: event.args.id,
-		sender: event.args.sender,
+		sender: event.transaction.from,
 		amount0: event.args.amount0,
 		amount1: event.args.amount1,
 		sqrtPrice: event.args.sqrtPriceX96,
@@ -186,10 +173,13 @@ ponder.on("PoolManager:Swap", async ({ event, context }) => {
 	await context.db
 		.insert(schema.user)
 		.values({
-			sender: event.args.sender,
+			sender: event.transaction.from,
 			chainId: context.network.chainId,
+			totalSwaps: 1,
 		})
-		.onConflictDoNothing();
+		.onConflictDoUpdate((row) => ({
+			totalSwaps: row.totalSwaps + 1,
+		}));
 });
 
 ponder.on("PoolManager:OperatorSet", async ({ event, context }) => {
@@ -234,7 +224,7 @@ ponder.on(
 			.values({
 				id: event.transaction.hash,
 				poolId: event.args.id,
-				sender: event.args.sender,
+				sender: event.transaction.from,
 				tickLower: event.args.tickLower,
 				tickUpper: event.args.tickUpper,
 				liquidityDelta: event.args.liquidityDelta,
@@ -248,14 +238,10 @@ ponder.on(
 			.values({
 				sender: event.transaction.from,
 				chainId: context.network.chainId,
+				totalLiquiditys: 1,
 			})
-			.onConflictDoNothing();
-		await context.db
-			.insert(schema.user)
-			.values({
-				sender: event.args.sender,
-				chainId: context.network.chainId,
-			})
-			.onConflictDoNothing();
+			.onConflictDoUpdate((row) => ({
+				totalLiquiditys: row.totalLiquiditys + 1,
+			}));
 	},
 );

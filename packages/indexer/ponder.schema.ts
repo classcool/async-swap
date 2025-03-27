@@ -3,6 +3,9 @@ import { index, onchainTable, primaryKey, relations } from "ponder";
 export const user = onchainTable("user", (t) => ({
 	sender: t.hex().notNull().primaryKey(),
 	chainId: t.integer().notNull(),
+	totalSwaps: t.integer().notNull().default(0),
+	totalLiquiditys: t.integer().notNull().default(0),
+	totalTransfers: t.integer().notNull().default(0),
 }));
 
 export const order = onchainTable(
