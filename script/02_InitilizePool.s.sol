@@ -41,7 +41,7 @@ contract IntializePool is FFIHelper {
 
   function intilizePool() public {
     /// @dev deploy tokens
-    MockERC20 rUSD = new MockERC20("Remittance USD", "rUSD", 18);
+    MockERC20 rUSD = new MockERC20("Test USD", "tUSD", 18);
     MockERC20 usdc = new MockERC20("USDC Token", "USDC", 6);
     rUSD.mint(OWNER, 1000e18);
     usdc.mint(OWNER, 1000e18);
