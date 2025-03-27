@@ -65,10 +65,11 @@ ponder.on("CsmmHook:BeforeSwap", async ({ event, context }) => {
 			nonce: event.args.nonce,
 			poolId: event.args.poolId,
 			zeroForOne: event.args.zeroForOne,
-			amountIn: BigInt(event.args.amountIn),
+			amountIn: event.args.amountIn,
 			timestamp: event.block.timestamp,
 		})
 		.onConflictDoUpdate((row) => ({
+			amountIn: row.amountIn + event.args.amountIn,
 			timestamp: event.block.timestamp,
 		}));
 });
