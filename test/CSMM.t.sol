@@ -35,9 +35,10 @@ contract CsmmTest is SetupDeploy {
     token1.transfer(_user, 1 ether);
   }
 
-  function testFuzzAsyncSwapOrder(bool zeroForOne, int256 amount) public userAction {
+  function testFuzzAsyncSwapOrder(bool zeroForOne, int256 amount, bool settleUsingBurn) public userAction {
     vm.assume(amount >= 1);
     vm.assume(amount <= 1 ether);
+    vm.assume(settleUsingBurn == false);
 
     uint256 balance0Before = manager.balanceOf(address(hook), currency0.toId());
     uint256 balance1Before = manager.balanceOf(address(hook), currency0.toId());
@@ -51,7 +52,7 @@ contract CsmmTest is SetupDeploy {
       sqrtPriceLimitX96: uint160(2 ** 96 + 1)
     });
     PoolSwapTest.TestSettings memory testSettings =
-      PoolSwapTest.TestSettings({ takeClaims: false, settleUsingBurn: false });
+      PoolSwapTest.TestSettings({ takeClaims: false, settleUsingBurn: settleUsingBurn });
 
     bytes memory hookData =
       abi.encode(CSMM.AsyncOrder({ poolId: poolId, owner: user, zeroForOne: zeroForOne, amountIn: amount }));
@@ -77,6 +78,8 @@ contract CsmmTest is SetupDeploy {
     } else {
       assertEq(manager.balanceOf(address(hook), currency1.toId()), balance1Before + uint256(amount));
     }
+
+    assertEq(hook.asyncOrders(poolId, user, zeroForOne), uint256(amount));
   }
 
 }
