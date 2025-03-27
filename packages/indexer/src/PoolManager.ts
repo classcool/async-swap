@@ -102,8 +102,11 @@ ponder.on("PoolManager:Initialize", async ({ event, context }) => {
 		.values({
 			hookAddress: event.args.hooks,
 			chainId: context.network.chainId,
+			timestamp: event.block.timestamp,
 		})
-		.onConflictDoNothing();
+		.onConflictDoUpdate({
+			timestamp: event.block.timestamp,
+		});
 
 	await context.db
 		.insert(schema.pool)
@@ -117,15 +120,31 @@ ponder.on("PoolManager:Initialize", async ({ event, context }) => {
 			sqrtPriceX96: event.args.sqrtPriceX96,
 			tick: event.args.tick,
 			chainId: context.network.chainId,
+			timestamp: event.block.timestamp,
 		})
-		.onConflictDoNothing();
+		.onConflictDoUpdate({
+			timestamp: event.block.timestamp,
+		});
+
+	await context.db
+		.insert(schema.user)
+		.values({
+			sender: event.transaction.from,
+			chainId: context.network.chainId,
+			totalInitialized: 1,
+			timestamp: event.block.timestamp,
+		})
+		.onConflictDoUpdate((row) => ({
+			totalInitialized: row.totalInitialized + 1,
+			timestamp: event.block.timestamp,
+		}));
 });
 
 ponder.on("PoolManager:Transfer", async ({ event, context }) => {
 	await context.db
 		.insert(schema.transfer)
 		.values({
-			id: event.transaction.hash,
+			hash: event.transaction.hash,
 			caller: event.args.caller,
 			from: event.args.from,
 			to: event.args.to,
@@ -135,10 +154,12 @@ ponder.on("PoolManager:Transfer", async ({ event, context }) => {
 					: toHex(event.args.id),
 			amount: event.args.amount,
 			chainId: context.network.chainId,
+			timestamp: event.block.timestamp,
 		})
-		.onConflictDoUpdate({
-			amount: event.args.amount,
-		});
+		.onConflictDoUpdate((row) => ({
+			amount: row.amount + event.args.amount,
+			timestamp: event.block.timestamp,
+		}));
 
 	await context.db
 		.insert(schema.user)
@@ -146,9 +167,11 @@ ponder.on("PoolManager:Transfer", async ({ event, context }) => {
 			sender: event.transaction.from,
 			chainId: context.network.chainId,
 			totalTransfers: 1,
+			timestamp: event.block.timestamp,
 		})
 		.onConflictDoUpdate((row) => ({
 			totalTransfers: row.totalTransfers + 1,
+			timestamp: event.block.timestamp,
 		}));
 });
 
@@ -157,18 +180,25 @@ ponder.on("PoolManager:Approval", async ({ event, context }) => {
 });
 
 ponder.on("PoolManager:Swap", async ({ event, context }) => {
-	await context.db.insert(schema.swap).values({
-		id: event.log.id,
-		poolId: event.args.id,
-		sender: event.transaction.from,
-		amount0: event.args.amount0,
-		amount1: event.args.amount1,
-		sqrtPrice: event.args.sqrtPriceX96,
-		liquidity: event.args.liquidity,
-		tick: event.args.tick,
-		fee: event.args.fee,
-		chainId: context.network.chainId,
-	});
+	await context.db
+		.insert(schema.swap)
+		.values({
+			id: event.log.id,
+			poolId: event.args.id,
+			sender: event.transaction.from,
+			amount0: event.args.amount0,
+			amount1: event.args.amount1,
+			sqrtPrice: event.args.sqrtPriceX96,
+			liquidity: event.args.liquidity,
+			tick: event.args.tick,
+			fee: event.args.fee,
+			chainId: context.network.chainId,
+			timestamp: event.block.timestamp,
+		})
+		.onConflictDoUpdate((row) => ({
+			amount0: row.amount0 + event.args.amount0,
+			amount1: row.amount1 + event.args.amount1,
+		}));
 
 	await context.db
 		.insert(schema.user)
@@ -190,9 +220,11 @@ ponder.on("PoolManager:OperatorSet", async ({ event, context }) => {
 			operator: event.args.operator,
 			approved: event.args.approved,
 			chainId: context.network.chainId,
+			timestamp: event.block.timestamp,
 		})
 		.onConflictDoUpdate({
 			approved: event.args.approved,
+			timestamp: event.block.timestamp,
 		});
 
 	await context.db
@@ -200,16 +232,22 @@ ponder.on("PoolManager:OperatorSet", async ({ event, context }) => {
 		.values({
 			sender: event.args.owner,
 			chainId: context.network.chainId,
+			timestamp: event.block.timestamp,
 		})
-		.onConflictDoNothing();
+		.onConflictDoUpdate({
+			timestamp: event.block.timestamp,
+		});
 
 	await context.db
 		.insert(schema.user)
 		.values({
 			sender: event.args.operator,
 			chainId: context.network.chainId,
+			timestamp: event.block.timestamp,
 		})
-		.onConflictDoNothing();
+		.onConflictDoUpdate({
+			timestamp: event.block.timestamp,
+		});
 });
 
 ponder.on("PoolManager:Donate", async ({ event, context }) => {
@@ -230,8 +268,12 @@ ponder.on(
 				liquidityDelta: event.args.liquidityDelta,
 				salt: event.args.salt,
 				chainId: context.network.chainId,
+				timestamp: event.block.timestamp,
 			})
-			.onConflictDoUpdate({ liquidityDelta: event.args.liquidityDelta });
+			.onConflictDoUpdate({
+				liquidityDelta: event.args.liquidityDelta,
+				timestamp: event.block.timestamp,
+			});
 
 		await context.db
 			.insert(schema.user)
@@ -239,9 +281,11 @@ ponder.on(
 				sender: event.transaction.from,
 				chainId: context.network.chainId,
 				totalLiquiditys: 1,
+				timestamp: event.block.timestamp,
 			})
 			.onConflictDoUpdate((row) => ({
 				totalLiquiditys: row.totalLiquiditys + 1,
+				timestamp: event.block.timestamp,
 			}));
 	},
 );
