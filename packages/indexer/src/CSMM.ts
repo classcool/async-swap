@@ -29,6 +29,19 @@ ponder.on("CsmmHook:BeforeAddLiquidity", async ({ event, context }) => {
 			timestamp: event.block.timestamp,
 		}));
 
+	await context.db
+		.insert(schema.user)
+		.values({
+			sender: event.transaction.from,
+			chainId: context.network.chainId,
+			totalLiquiditys: 1,
+			timestamp: event.block.timestamp,
+		})
+		.onConflictDoUpdate((row) => ({
+			totalLiquiditys: row.totalLiquiditys + 1,
+			timestamp: event.block.timestamp,
+		}));
+
 	for (const client of clients) {
 		if (client.readyState === WebSocket.OPEN) {
 			client.send(
