@@ -19,7 +19,7 @@ contract CSMM is BaseHook {
   using CurrencySettler for Currency;
   using PoolIdLibrary for PoolKey;
 
-  mapping(address user => uint256 claimable) asyncOrders;
+  mapping(PoolId poolId => mapping(address user => mapping(bool zeroForOne => uint256 claimable))) public asyncOrders;
   mapping(PoolId poolId => mapping(address user => uint256 nonce)) public nonces;
 
   event BeforeAddLiquidity(PoolId poolId, address sender, BalanceDelta liquidityDelta);
@@ -107,6 +107,9 @@ contract CSMM is BaseHook {
     } else {
       key.currency1.take(poolManager, address(this), amountInPositive, true);
     }
+
+    uint256 currClaimables = asyncOrders[order.poolId][order.owner][order.zeroForOne];
+    asyncOrders[order.poolId][order.owner][order.zeroForOne] = currClaimables + uint256(-params.amountSpecified);
 
     /// @dev emit event consumed by filler
     emit BeforeSwap(
