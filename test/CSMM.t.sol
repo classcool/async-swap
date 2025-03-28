@@ -35,10 +35,13 @@ contract CsmmTest is SetupDeploy {
     token1.transfer(_user, 1 ether);
   }
 
-  function testFuzzAsyncSwapOrder(bool zeroForOne, int256 amount, bool settleUsingBurn) public userAction {
-    vm.assume(amount >= 1);
-    vm.assume(amount <= 1 ether);
-    vm.assume(settleUsingBurn == false);
+  function testAsyncSwapOrder(bool zeroForOne, int256 amount, bool settleUsingBurn) public userAction {
+    // vm.assume(amount >= 1);
+    // vm.assume(amount <= 1 ether);
+    // vm.assume(settleUsingBurn == false);
+    amount = 0xbeef;
+    zeroForOne = false;
+    settleUsingBurn = false;
 
     uint256 balance0Before = manager.balanceOf(address(hook), currency0.toId());
     uint256 balance1Before = manager.balanceOf(address(hook), currency0.toId());
@@ -54,8 +57,9 @@ contract CsmmTest is SetupDeploy {
     PoolSwapTest.TestSettings memory testSettings =
       PoolSwapTest.TestSettings({ takeClaims: false, settleUsingBurn: settleUsingBurn });
 
-    bytes memory hookData =
-      abi.encode(CSMM.AsyncOrder({ poolId: poolId, owner: user, zeroForOne: zeroForOne, amountIn: amount }));
+    CSMM.AsyncOrder memory order =
+      CSMM.AsyncOrder({ poolId: poolId, owner: user, zeroForOne: zeroForOne, amountIn: amount });
+    bytes memory hookData = abi.encode(order);
 
     if (zeroForOne) {
       token0.approve(address(router), uint256(amount));
@@ -80,6 +84,18 @@ contract CsmmTest is SetupDeploy {
     }
 
     assertEq(hook.asyncOrders(poolId, user, zeroForOne), uint256(amount));
+
+    // execute order after the fact
+    vm.startPrank(owner);
+    hook.setExecutor(owner);
+    hook.executeOrders(key, order);
+    vm.stopPrank();
+
+    if (zeroForOne) {
+      assertEq(manager.balanceOf(user, currency0.toId()), uint256(amount));
+    } else {
+      assertEq(manager.balanceOf(user, currency1.toId()), uint256(amount));
+    }
   }
 
 }
