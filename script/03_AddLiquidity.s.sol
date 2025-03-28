@@ -17,7 +17,6 @@ contract AddLiquidityScript is FFIHelper {
   using CurrencyLibrary for Currency;
   using PoolIdLibrary for PoolKey;
 
-  IPoolManager manager;
   CSMM hook;
   bytes32 poolId;
   Currency currency0;
@@ -25,7 +24,6 @@ contract AddLiquidityScript is FFIHelper {
   PoolKey key;
 
   function setUp() public {
-    manager = IPoolManager(_getDeployedPoolManager());
     (address _hook,) = _getDeployedHook();
     hook = CSMM(_hook);
     uint256[] memory topics = _getPoolTopics();
