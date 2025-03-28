@@ -38,13 +38,19 @@ export const order = onchainTable(
 	}),
 );
 
-export const currency = onchainTable("currency", (t) => ({
-	address: t.hex().notNull().primaryKey(),
-	name: t.text().notNull().default(""),
-	symbol: t.text().notNull().default(""),
-	decimals: t.integer().notNull().default(18),
-	chainId: t.integer().notNull(),
-}));
+export const currency = onchainTable(
+	"currency",
+	(t) => ({
+		address: t.hex().notNull().primaryKey(),
+		name: t.text().notNull().default(""),
+		symbol: t.text().notNull().default(""),
+		decimals: t.integer().notNull().default(18),
+		chainId: t.integer().notNull(),
+	}),
+	(table) => ({
+		chainIdIndex: index().on(table.chainId),
+	}),
+);
 
 export const hook = onchainTable(
 	"hook",
@@ -57,6 +63,7 @@ export const hook = onchainTable(
 	}),
 	(table) => ({
 		pk: primaryKey({ columns: [table.hookAddress, table.chainId] }),
+		chainIdIndex: index().on(table.chainId),
 	}),
 );
 
@@ -78,6 +85,7 @@ export const pool = onchainTable(
 	}),
 	(table) => ({
 		pk: primaryKey({ columns: [table.poolId, table.chainId] }),
+		chainIdIndex: index().on(table.chainId),
 	}),
 );
 
@@ -123,8 +131,6 @@ export const operator = onchainTable(
 
 	(table) => ({
 		pk: primaryKey({ columns: [table.owner, table.operator, table.chainId] }),
-		ownerIndex: index().on(table.owner),
-		operatorIndex: index().on(table.operator),
 		chainIdIndex: index().on(table.chainId),
 	}),
 );
@@ -151,7 +157,6 @@ export const swap = onchainTable(
 			columns: [table.chainId, table.id, table.poolId, table.sender],
 		}),
 		poolIdIndex: index().on(table.poolId),
-		senderIndex: index().on(table.sender),
 		chainIdIndex: index().on(table.chainId),
 	}),
 );
@@ -180,10 +185,9 @@ export const transfer = onchainTable(
 				table.to,
 			],
 		}),
-		callerIndex: index().on(table.caller),
 		fromIndex: index().on(table.from),
-		toIndex: index().on(table.to),
 		idIndex: index().on(table.erc6909Id),
+		chainIdIndex: index().on(table.chainId),
 	}),
 );
 
