@@ -90,6 +90,7 @@ contract CsmmTest is SetupDeploy {
     hook.executeOrder(key, order);
     vm.stopPrank();
 
+    assertEq(hook.asyncOrders(poolId, user, zeroForOne), 0);
     if (zeroForOne) {
       assertEq(manager.balanceOf(user, currency0.toId()), uint256(amount));
     } else {
