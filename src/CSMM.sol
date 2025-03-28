@@ -30,17 +30,18 @@ contract CSMM is Ownable, BaseHook {
 
   event BeforeAddLiquidity(PoolId poolId, address sender, BalanceDelta liquidityDelta);
   event BeforeSwap(
-    bytes32 poolId, address owner, bool indexed zeroForOne, int256 indexed amountIn, uint256 indexed nonc
+    bytes32 poolId, address owner, bool indexed zeroForOne, int256 indexed amountIn, uint256 indexed nonce
   );
+  event AsyncOrderFilled(PoolId poolId, address owner, bool zeroForOne, uint256 amount);
 
   address asyncExecutor;
 
   error AddLiquidityThroughHook();
 
-  constructor(IPoolManager poolManager) Ownable(msg.sender) BaseHook(poolManager) { }
+  constructor(IPoolManager poolManager, address owner_) Ownable(owner_) BaseHook(poolManager) { }
 
   modifier onlyAsyncExecutor() {
-    require(msg.sender == asyncExecutor);
+    require(msg.sender == asyncExecutor, "Only Authorized Executor");
     _;
   }
 
@@ -95,7 +96,9 @@ contract CSMM is Ownable, BaseHook {
     }
     uint256 claimable = asyncOrders[order.poolId][order.owner][order.zeroForOne];
     if (claimable >= uint256(order.amountIn)) {
+			asyncOrders[order.poolId][order.owner][order.zeroForOne] -= uint256(order.amountIn);
       poolManager.transfer(order.owner, currency.toId(), uint256(order.amountIn));
+      emit AsyncOrderFilled(order.poolId, order.owner, order.zeroForOne, uint256(order.amountIn));
     }
   }
 
