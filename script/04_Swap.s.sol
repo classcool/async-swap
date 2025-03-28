@@ -19,7 +19,6 @@ contract SwapScript is FFIHelper {
   using CurrencyLibrary for Currency;
   using PoolIdLibrary for PoolKey;
 
-  IPoolManager manager;
   CSMM hook;
   PoolId poolId;
   Currency currency0;
@@ -28,7 +27,6 @@ contract SwapScript is FFIHelper {
   PoolSwapTest router;
 
   function setUp() public {
-    manager = IPoolManager(_getDeployedPoolManager());
     (address _hook, address _router) = _getDeployedHook();
     hook = CSMM(_hook);
     router = PoolSwapTest(_router);
