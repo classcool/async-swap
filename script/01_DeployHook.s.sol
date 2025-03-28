@@ -11,6 +11,8 @@ import { Hooks } from "v4-core/libraries/Hooks.sol";
 import { PoolSwapTest } from "v4-core/test/PoolSwapTest.sol";
 import { HookMiner } from "v4-periphery/src/utils/HookMiner.sol";
 
+address constant OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+
 /// @notice Deploys Hook contract
 contract DeployHookScript is FFIHelper {
 
@@ -24,7 +26,7 @@ contract DeployHookScript is FFIHelper {
   }
 
   function run() public {
-    vm.startBroadcast();
+    vm.startBroadcast(OWNER);
 
     /// @dev get hook flags
     uint160 hookFlags =
@@ -32,10 +34,10 @@ contract DeployHookScript is FFIHelper {
 
     /// @dev compute create2 salt
     (address hookAddress, bytes32 salt) =
-      HookMiner.find(CREATE2_FACTORY, hookFlags, type(CSMM).creationCode, abi.encode(address(manager)));
+      HookMiner.find(CREATE2_FACTORY, hookFlags, type(CSMM).creationCode, abi.encode(address(manager), OWNER));
 
     /// @dev deploy hook
-    hook = new CSMM{ salt: salt }(manager);
+    hook = new CSMM{ salt: salt }(manager, OWNER);
     assert(address(hook) == hookAddress);
 
     router = new PoolSwapTest(manager);
