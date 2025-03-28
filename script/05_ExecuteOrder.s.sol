@@ -14,7 +14,7 @@ import { PoolIdLibrary, PoolKey } from "v4-core/types/PoolKey.sol";
 
 address constant OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
-contract SwapScript is FFIHelper {
+contract ExecuteAsyncOrderScript is FFIHelper {
 
   using CurrencyLibrary for Currency;
   using PoolIdLibrary for PoolKey;
