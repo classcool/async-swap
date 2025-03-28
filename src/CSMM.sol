@@ -96,7 +96,7 @@ contract CSMM is Ownable, BaseHook {
     }
     uint256 claimable = asyncOrders[order.poolId][order.owner][order.zeroForOne];
     if (claimable >= uint256(order.amountIn)) {
-			asyncOrders[order.poolId][order.owner][order.zeroForOne] -= uint256(order.amountIn);
+      asyncOrders[order.poolId][order.owner][order.zeroForOne] -= uint256(order.amountIn);
       poolManager.transfer(order.owner, currency.toId(), uint256(order.amountIn));
       emit AsyncOrderFilled(order.poolId, order.owner, order.zeroForOne, uint256(order.amountIn));
     }
