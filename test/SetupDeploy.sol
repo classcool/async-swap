@@ -64,6 +64,7 @@ contract SetupDeploy is Test {
   function deployHook() public {
     uint160 hookFlags =
       uint160(Hooks.BEFORE_SWAP_FLAG | Hooks.BEFORE_ADD_LIQUIDITY_FLAG | Hooks.BEFORE_SWAP_RETURNS_DELTA_FLAG);
+    vm.startPrank(owner);
     deployCodeTo("CSMM.sol", abi.encode(manager), address(hookFlags));
     hook = CSMM(address(hookFlags));
   }
