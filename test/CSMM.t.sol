@@ -85,9 +85,8 @@ contract CsmmTest is SetupDeploy {
 
     assertEq(hook.asyncOrders(poolId, user, zeroForOne), uint256(amount));
 
-    // execute order after the fact
-    vm.startPrank(owner);
-    hook.setExecutor(owner);
+    // Async executor after order
+    vm.startPrank(asyncExecutor);
     hook.executeOrder(key, order);
     vm.stopPrank();
 

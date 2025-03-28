@@ -16,6 +16,7 @@ import { PoolKey } from "v4-core/types/PoolKey.sol";
 contract SetupDeploy is Test {
 
   address owner = makeAddr("deployer");
+	address asyncExecutor = makeAddr("asyncExecutor");
   IPoolManager manager;
   PoolKey key;
   CSMM hook;
@@ -67,6 +68,7 @@ contract SetupDeploy is Test {
     vm.startPrank(owner);
     deployCodeTo("CSMM.sol", abi.encode(manager), address(hookFlags));
     hook = CSMM(address(hookFlags));
+    hook.setExecutor(asyncExecutor);
   }
 
   function deployTokens() public {
