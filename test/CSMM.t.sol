@@ -35,13 +35,13 @@ contract CsmmTest is SetupDeploy {
     token1.transfer(_user, 1 ether);
   }
 
-  function testAsyncSwapOrder(bool zeroForOne, int256 amount, bool settleUsingBurn) public userAction {
-    // vm.assume(amount >= 1);
-    // vm.assume(amount <= 1 ether);
-    // vm.assume(settleUsingBurn == false);
-    amount = 0xbeef;
-    zeroForOne = false;
-    settleUsingBurn = false;
+  function testFuzzAsyncSwapOrder(bool zeroForOne, int256 amount, bool settleUsingBurn) public userAction {
+    vm.assume(amount >= 1);
+    vm.assume(amount <= 1 ether);
+    vm.assume(settleUsingBurn == false);
+    // amount = 0xbeef;
+    // zeroForOne = false;
+    // settleUsingBurn = false;
 
     uint256 balance0Before = manager.balanceOf(address(hook), currency0.toId());
     uint256 balance1Before = manager.balanceOf(address(hook), currency0.toId());
