@@ -88,7 +88,7 @@ contract CsmmTest is SetupDeploy {
     // execute order after the fact
     vm.startPrank(owner);
     hook.setExecutor(owner);
-    hook.executeOrders(key, order);
+    hook.executeOrder(key, order);
     vm.stopPrank();
 
     if (zeroForOne) {

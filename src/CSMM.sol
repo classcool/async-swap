@@ -86,7 +86,7 @@ contract CSMM is Ownable, BaseHook {
     );
   }
 
-  function executeOrders(PoolKey calldata key, AsyncOrder calldata order) external onlyAsyncExecutor {
+  function executeOrder(PoolKey calldata key, AsyncOrder calldata order) external onlyAsyncExecutor {
     Currency currency;
     if (order.zeroForOne) {
       currency = key.currency0;
