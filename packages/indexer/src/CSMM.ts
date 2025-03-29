@@ -68,7 +68,7 @@ ponder.on("CsmmHook:BeforeSwap", async ({ event, context }) => {
 			timestamp: event.block.timestamp,
 		})
 		.onConflictDoUpdate((row) => ({
-		orderStatus: false,
+			orderStatus: false,
 			amountIn: row.amountIn + event.args.amountIn,
 			timestamp: event.block.timestamp,
 		}));

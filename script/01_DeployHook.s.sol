@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import { CSMM } from "../src/CSMM.sol";
+import { LAMMbert } from "../src/LAMMbert.sol";
 import { FFIHelper } from "./FFIHelper.sol";
 import { console } from "forge-std/Test.sol";
 import { IHooks } from "v4-core/interfaces/IHooks.sol";
@@ -32,10 +32,10 @@ contract DeployHookScript is FFIHelper {
 
     /// @dev compute create2 salt
     (address hookAddress, bytes32 salt) =
-      HookMiner.find(CREATE2_FACTORY, hookFlags, type(CSMM).creationCode, abi.encode(address(manager), OWNER));
+      HookMiner.find(CREATE2_FACTORY, hookFlags, type(LAMMbert).creationCode, abi.encode(address(manager)));
 
     /// @dev deploy hook
-    hook = new CSMM{ salt: salt }(manager, OWNER);
+    hook = new LAMMbert{ salt: salt }(manager);
     assert(address(hook) == hookAddress);
 
     router = new PoolSwapTest(manager);

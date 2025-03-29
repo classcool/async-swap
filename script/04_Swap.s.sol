@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { CSMM } from "../src/CSMM.sol";
+import { LAMMbert } from "../src/LAMMbert.sol";
 import { FFIHelper } from "./FFIHelper.sol";
 import { console } from "forge-std/Test.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
@@ -17,7 +17,7 @@ contract SwapScript is FFIHelper {
   using CurrencyLibrary for Currency;
   using PoolIdLibrary for PoolKey;
 
-  CSMM hook;
+  LAMMbert hook;
   PoolId poolId;
   Currency currency0;
   Currency currency1;
@@ -26,7 +26,7 @@ contract SwapScript is FFIHelper {
 
   function setUp() public {
     (address _hook, address _router) = _getDeployedHook();
-    hook = CSMM(_hook);
+    hook = LAMMbert(payable(_hook));
     router = PoolSwapTest(_router);
     uint256[] memory topics = _getPoolTopics();
     poolId = PoolId.wrap(bytes32(topics[1]));
@@ -40,9 +40,9 @@ contract SwapScript is FFIHelper {
   function run() public {
     vm.startBroadcast(OWNER);
 
-    uint256 amount = 100;
+    uint256 amount = 400;
 
-    bool zeroForOne = true;
+    bool zeroForOne = false;
     if (zeroForOne) {
       IERC20Minimal(Currency.unwrap(currency0)).approve(address(router), uint256(amount));
     } else {
@@ -56,8 +56,9 @@ contract SwapScript is FFIHelper {
     PoolSwapTest.TestSettings memory testSettings =
       PoolSwapTest.TestSettings({ takeClaims: false, settleUsingBurn: false });
 
-    bytes memory hookData =
-      abi.encode(CSMM.AsyncOrder({ poolId: poolId, owner: OWNER, zeroForOne: zeroForOne, amountIn: int256(amount) }));
+    bytes memory hookData = abi.encode(
+      LAMMbert.AsyncOrder({ poolId: poolId, owner: OWNER, zeroForOne: zeroForOne, amountIn: int256(amount) })
+    );
 
     router.swap(key, params, testSettings, hookData);
 
