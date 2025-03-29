@@ -17,23 +17,17 @@ export const order = onchainTable(
 	(t) => ({
 		chainId: t.integer().notNull(),
 		owner: t.hex().notNull(),
-		nonce: t.bigint().notNull(),
 		poolId: t.hex().notNull(),
 		amountIn: t.bigint().notNull(),
 		zeroForOne: t.boolean().notNull(),
+		orderStatus: t.boolean().notNull().default(false),
 		timestamp: t
 			.bigint()
 			.default(BigInt(Math.floor(new Date().getTime() / 1000))),
 	}),
 	(table) => ({
 		pk: primaryKey({
-			columns: [
-				table.chainId,
-				table.owner,
-				table.poolId,
-				table.zeroForOne,
-				table.nonce,
-			],
+			columns: [table.chainId, table.owner, table.poolId, table.zeroForOne],
 		}),
 	}),
 );
