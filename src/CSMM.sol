@@ -150,9 +150,7 @@ contract CSMM is Ownable, BaseHook {
     asyncOrders[order.poolId][order.owner][order.zeroForOne] = currClaimables + uint256(-params.amountSpecified);
 
     /// @dev emit event consumed by filler
-    emit BeforeSwap(
-      PoolId.unwrap(order.poolId), order.owner, order.zeroForOne, order.amountIn
-    );
+    emit BeforeSwap(PoolId.unwrap(order.poolId), order.owner, order.zeroForOne, order.amountIn);
 
     return (this.beforeSwap.selector, beforeSwapDelta, 0);
   }
