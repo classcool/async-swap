@@ -20,8 +20,8 @@ contract IntializePool is FFIHelper {
   Currency currency0;
   Currency currency1;
   PoolKey key;
-  uint24 FEE = LPFeeLibrary.DYNAMIC_FEE_FLAG;
-  int24 TICK_SPACING = 60;
+  uint24 FEE = 0;
+  int24 TICK_SPACING = 1;
 
   function setUp() public {
     manager = IPoolManager(_getDeployedPoolManager());
