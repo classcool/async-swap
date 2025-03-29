@@ -29,14 +29,13 @@ contract CSMM is Ownable, BaseHook {
   mapping(PoolId poolId => mapping(address user => uint256 nonce)) public nonces;
 
   event BeforeAddLiquidity(PoolId poolId, address sender, BalanceDelta liquidityDelta);
-  event BeforeSwap(
-    bytes32 poolId, address owner, bool indexed zeroForOne, int256 indexed amountIn, uint256 indexed nonce
-  );
+  event BeforeSwap(bytes32 poolId, address owner, bool indexed zeroForOne, int256 indexed amountIn);
   event AsyncOrderFilled(PoolId poolId, address owner, bool zeroForOne, uint256 amount);
 
   address asyncExecutor;
 
   error AddLiquidityThroughHook();
+  error InvalidOrder();
 
   constructor(IPoolManager poolManager, address owner_) Ownable(owner_) BaseHook(poolManager) { }
 
@@ -88,6 +87,10 @@ contract CSMM is Ownable, BaseHook {
   }
 
   function executeOrder(PoolKey calldata key, AsyncOrder calldata order) external onlyAsyncExecutor {
+    uint256 claimableAmount = asyncOrders[order.poolId][order.owner][order.zeroForOne];
+    require(uint256(order.amountIn) <= claimableAmount);
+    require(order.amountIn != 0, "Zero order amount");
+
     Currency currency;
     if (order.zeroForOne) {
       currency = key.currency0;
@@ -99,6 +102,8 @@ contract CSMM is Ownable, BaseHook {
       asyncOrders[order.poolId][order.owner][order.zeroForOne] -= uint256(order.amountIn);
       poolManager.transfer(order.owner, currency.toId(), uint256(order.amountIn));
       emit AsyncOrderFilled(order.poolId, order.owner, order.zeroForOne, uint256(order.amountIn));
+    } else {
+      revert InvalidOrder();
     }
   }
 
@@ -146,7 +151,7 @@ contract CSMM is Ownable, BaseHook {
 
     /// @dev emit event consumed by filler
     emit BeforeSwap(
-      PoolId.unwrap(order.poolId), order.owner, order.zeroForOne, order.amountIn, nonces[order.poolId][order.owner]
+      PoolId.unwrap(order.poolId), order.owner, order.zeroForOne, order.amountIn
     );
 
     return (this.beforeSwap.selector, beforeSwapDelta, 0);
