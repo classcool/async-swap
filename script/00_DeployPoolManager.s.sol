@@ -14,7 +14,11 @@ contract DeployPoolManager is Script, FFIHelper {
     vm.startBroadcast();
 
     /// @dev deploy manager
-    manager = new PoolManager(OWNER);
+    if (chain == SelectChain.Anvil) {
+      manager = new PoolManager(ANVIL_OWNER);
+    } else {
+      manager = new PoolManager(OWNER);
+    }
   }
 
 }

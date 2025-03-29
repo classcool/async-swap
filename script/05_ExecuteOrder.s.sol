@@ -25,13 +25,13 @@ contract ExecuteAsyncOrderScript is FFIHelper {
   CSMM.AsyncOrder order;
 
   function setUp() public {
-    (address _hook,) = _getDeployedHook(SelectChain.UnichainSepolia);
+    (address _hook,) = _getDeployedHook();
     hook = CSMM(_hook);
-    uint256[] memory topics = _getPoolTopics(SelectChain.UnichainSepolia);
+    uint256[] memory topics = _getPoolTopics();
     currency0 = Currency.wrap(address(uint160(topics[2])));
     currency1 = Currency.wrap(address(uint160(topics[3])));
     key = PoolKey(currency0, currency1, LPFeeLibrary.DYNAMIC_FEE_FLAG, 60, hook);
-    order = _getAsyncOrder(SelectChain.UnichainSepolia);
+    order = _getAsyncOrder();
   }
 
   function swap() public { }

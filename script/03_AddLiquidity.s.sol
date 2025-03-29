@@ -22,9 +22,9 @@ contract AddLiquidityScript is FFIHelper {
   PoolKey key;
 
   function setUp() public {
-    (address _hook,) = _getDeployedHook(SelectChain.UnichainSepolia);
+    (address _hook,) = _getDeployedHook();
     hook = CSMM(_hook);
-    uint256[] memory topics = _getPoolTopics(SelectChain.UnichainSepolia);
+    uint256[] memory topics = _getPoolTopics();
     poolId = bytes32(topics[1]);
     currency0 = Currency.wrap(address(uint160(topics[2])));
     currency1 = Currency.wrap(address(uint160(topics[3])));

@@ -19,7 +19,7 @@ contract DeployHookScript is FFIHelper {
   PoolSwapTest router;
 
   function setUp() public {
-    manager = IPoolManager(_getDeployedPoolManager(SelectChain.UnichainSepolia));
+    manager = IPoolManager(_getDeployedPoolManager());
     console.log(address(manager));
   }
 

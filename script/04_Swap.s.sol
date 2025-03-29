@@ -25,10 +25,10 @@ contract SwapScript is FFIHelper {
   PoolSwapTest router;
 
   function setUp() public {
-    (address _hook, address _router) = _getDeployedHook(SelectChain.UnichainSepolia);
+    (address _hook, address _router) = _getDeployedHook();
     hook = CSMM(_hook);
     router = PoolSwapTest(_router);
-    uint256[] memory topics = _getPoolTopics(SelectChain.UnichainSepolia);
+    uint256[] memory topics = _getPoolTopics();
     poolId = PoolId.wrap(bytes32(topics[1]));
     currency0 = Currency.wrap(address(uint160(topics[2])));
     currency1 = Currency.wrap(address(uint160(topics[3])));

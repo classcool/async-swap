@@ -18,11 +18,13 @@ contract FFIHelper is Script {
     Mainnet
   }
 
-  address public OWNER = 0x04655832bcb0a9a0bE8c5AB71E4D311464c97AF5; // sepolia unichain
+  SelectChain chain = SelectChain.Anvil;
+  address OWNER = 0x04655832bcb0a9a0bE8c5AB71E4D311464c97AF5; // sepolia unichain
+  address ANVIL_OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
   using stdJson for string;
 
-  function _getDeployedPoolManager(SelectChain chain) internal returns (address poolManagerAddress) {
+  function _getDeployedPoolManager() internal returns (address poolManagerAddress) {
     if (chain == SelectChain.UnichainSepolia) {
       poolManagerAddress = 0x00B036B58a818B1BC34d502D3fE730Db729e62AC;
     }
@@ -33,7 +35,7 @@ contract FFIHelper is Script {
       poolManagerAddress = 0x1F98400000000000000000000000000000000004;
     }
     if (chain == SelectChain.Anvil) {
-      OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+      OWNER = ANVIL_OWNER;
       string memory root = vm.projectRoot();
       string memory path = string.concat(root, "/broadcast/00_DeployPoolManager.s.sol/31337/run-latest.json");
       string memory json = vm.readFile(path);
@@ -41,7 +43,7 @@ contract FFIHelper is Script {
     }
   }
 
-  function _getDeployedHook(SelectChain chain) internal returns (address hookAddress, address routerAddress) {
+  function _getDeployedHook() internal returns (address hookAddress, address routerAddress) {
     string memory root = vm.projectRoot();
     string memory broadcastUrl = "/broadcast/01_DeployHook.s.sol/";
     if (chain == SelectChain.UnichainSepolia) {
@@ -54,7 +56,7 @@ contract FFIHelper is Script {
       broadcastUrl = string.concat(broadcastUrl, "1/run-latest.json");
     }
     if (chain == SelectChain.Anvil) {
-      OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+      OWNER = ANVIL_OWNER;
       broadcastUrl = string.concat(broadcastUrl, "31337/run-latest.json");
     }
     string memory path = string.concat(root, broadcastUrl);
@@ -63,7 +65,7 @@ contract FFIHelper is Script {
     routerAddress = json.readAddress(".transactions[1].contractAddress");
   }
 
-  function _getPoolTopics(SelectChain chain) internal returns (uint256[] memory) {
+  function _getPoolTopics() internal returns (uint256[] memory) {
     string memory root = vm.projectRoot();
     string memory broadcastUrl = "/broadcast/02_InitilizePool.s.sol/";
     if (chain == SelectChain.UnichainSepolia) {
@@ -76,7 +78,7 @@ contract FFIHelper is Script {
       broadcastUrl = string.concat(broadcastUrl, "1/run-latest.json");
     }
     if (chain == SelectChain.Anvil) {
-      OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+      OWNER = ANVIL_OWNER;
       broadcastUrl = string.concat(broadcastUrl, "31337/run-latest.json");
     }
     string memory path = string.concat(root, broadcastUrl);
@@ -90,7 +92,7 @@ contract FFIHelper is Script {
     address owner;
   }
 
-  function _getAsyncOrder(SelectChain chain) internal returns (CSMM.AsyncOrder memory) {
+  function _getAsyncOrder() internal returns (CSMM.AsyncOrder memory) {
     string memory root = vm.projectRoot();
     string memory broadcastUrl = "/broadcast/04_Swap.s.sol/";
     if (chain == SelectChain.UnichainSepolia) {
@@ -103,7 +105,7 @@ contract FFIHelper is Script {
       broadcastUrl = string.concat(broadcastUrl, "1/run-latest.json");
     }
     if (chain == SelectChain.Anvil) {
-      OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+      OWNER = ANVIL_OWNER;
       broadcastUrl = string.concat(broadcastUrl, "31337/run-latest.json");
     }
     string memory path = string.concat(root, broadcastUrl);
