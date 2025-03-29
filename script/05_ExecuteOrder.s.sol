@@ -12,8 +12,6 @@ import { Currency, CurrencyLibrary } from "v4-core/types/Currency.sol";
 import { PoolId } from "v4-core/types/PoolId.sol";
 import { PoolIdLibrary, PoolKey } from "v4-core/types/PoolKey.sol";
 
-address constant OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-
 contract ExecuteAsyncOrderScript is FFIHelper {
 
   using CurrencyLibrary for Currency;
@@ -27,13 +25,13 @@ contract ExecuteAsyncOrderScript is FFIHelper {
   CSMM.AsyncOrder order;
 
   function setUp() public {
-    (address _hook,) = _getDeployedHook();
+    (address _hook,) = _getDeployedHook(SelectChain.UnichainSepolia);
     hook = CSMM(_hook);
-    uint256[] memory topics = _getPoolTopics();
+    uint256[] memory topics = _getPoolTopics(SelectChain.UnichainSepolia);
     currency0 = Currency.wrap(address(uint160(topics[2])));
     currency1 = Currency.wrap(address(uint160(topics[3])));
     key = PoolKey(currency0, currency1, LPFeeLibrary.DYNAMIC_FEE_FLAG, 60, hook);
-    order = _getAsyncOrder();
+    order = _getAsyncOrder(SelectChain.UnichainSepolia);
   }
 
   function swap() public { }
@@ -42,7 +40,6 @@ contract ExecuteAsyncOrderScript is FFIHelper {
     vm.startBroadcast(OWNER);
     hook.setExecutor(OWNER);
     vm.stopBroadcast();
-
     vm.startBroadcast(OWNER);
     hook.executeOrder(key, order);
     vm.stopBroadcast();

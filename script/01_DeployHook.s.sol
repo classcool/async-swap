@@ -11,8 +11,6 @@ import { Hooks } from "v4-core/libraries/Hooks.sol";
 import { PoolSwapTest } from "v4-core/test/PoolSwapTest.sol";
 import { HookMiner } from "v4-periphery/src/utils/HookMiner.sol";
 
-address constant OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-
 /// @notice Deploys Hook contract
 contract DeployHookScript is FFIHelper {
 
@@ -21,7 +19,7 @@ contract DeployHookScript is FFIHelper {
   PoolSwapTest router;
 
   function setUp() public {
-    manager = IPoolManager(_getDeployedPoolManager());
+    manager = IPoolManager(_getDeployedPoolManager(SelectChain.UnichainSepolia));
     console.log(address(manager));
   }
 

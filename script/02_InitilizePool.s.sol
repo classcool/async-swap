@@ -10,7 +10,6 @@ import { LPFeeLibrary } from "v4-core/libraries/LPFeeLibrary.sol";
 import { Currency } from "v4-core/types/Currency.sol";
 import { PoolKey } from "v4-core/types/PoolKey.sol";
 
-address constant OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 /// @notice Scripts to intialize pool
 
 contract IntializePool is FFIHelper {
@@ -24,8 +23,8 @@ contract IntializePool is FFIHelper {
   int24 TICK_SPACING = 60;
 
   function setUp() public {
-    manager = IPoolManager(_getDeployedPoolManager());
-    (address _hook,) = _getDeployedHook();
+    manager = IPoolManager(_getDeployedPoolManager(SelectChain.UnichainSepolia));
+    (address _hook,) = _getDeployedHook(SelectChain.UnichainSepolia);
     hook = IHooks(_hook);
     console.log(address(manager));
     console.log(address(hook));
@@ -41,8 +40,8 @@ contract IntializePool is FFIHelper {
 
   function intilizePool() public {
     /// @dev deploy tokens
-    MockERC20 rUSD = new MockERC20("Test USD", "tUSD", 18);
-    MockERC20 usdc = new MockERC20("USDC Token", "USDC", 6);
+    MockERC20 rUSD = new MockERC20("Async USDC", "aUSDC", 18);
+    MockERC20 usdc = new MockERC20("Test USDC", "tUSDC", 6);
     rUSD.mint(OWNER, 1000e18);
     usdc.mint(OWNER, 1000e18);
 

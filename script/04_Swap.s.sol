@@ -12,8 +12,6 @@ import { Currency, CurrencyLibrary } from "v4-core/types/Currency.sol";
 import { PoolId } from "v4-core/types/PoolId.sol";
 import { PoolIdLibrary, PoolKey } from "v4-core/types/PoolKey.sol";
 
-address constant OWNER = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-
 contract SwapScript is FFIHelper {
 
   using CurrencyLibrary for Currency;
@@ -27,10 +25,10 @@ contract SwapScript is FFIHelper {
   PoolSwapTest router;
 
   function setUp() public {
-    (address _hook, address _router) = _getDeployedHook();
+    (address _hook, address _router) = _getDeployedHook(SelectChain.UnichainSepolia);
     hook = CSMM(_hook);
     router = PoolSwapTest(_router);
-    uint256[] memory topics = _getPoolTopics();
+    uint256[] memory topics = _getPoolTopics(SelectChain.UnichainSepolia);
     poolId = PoolId.wrap(bytes32(topics[1]));
     currency0 = Currency.wrap(address(uint160(topics[2])));
     currency1 = Currency.wrap(address(uint160(topics[3])));
@@ -44,7 +42,7 @@ contract SwapScript is FFIHelper {
 
     uint256 amount = 100;
 
-    bool zeroForOne = false;
+    bool zeroForOne = true;
     if (zeroForOne) {
       IERC20Minimal(Currency.unwrap(currency0)).approve(address(router), uint256(amount));
     } else {
