@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import { AsyncCSMM } from "../src/AsyncCSMM.sol";
 import { IAsyncSwap } from "../src/interfaces/IAsyncSwap.sol";
 import { IRouter } from "../src/interfaces/IRouter.sol";
-import { SetupDeploy } from "./SetupDeploy.sol";
+import { SetupHook } from "./SetupHook.sol";
 import { console } from "forge-std/Test.sol";
 import { Currency, IHooks, IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { PoolSwapTest } from "v4-core/test/PoolSwapTest.sol";
@@ -13,7 +13,7 @@ import { PoolKey } from "v4-core/types/PoolKey.sol";
 
 /// @title A Test contract
 /// @notice AsyncCSMM tests
-contract AsyncCsmmTest is SetupDeploy {
+contract AsyncCsmmTest is SetupHook {
 
   using CurrencyLibrary for Currency;
 
