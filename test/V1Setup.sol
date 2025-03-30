@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import { CSMM } from "../src/CSMM.sol";
+import { CSMM } from "../src/V1.sol";
 import { Test, console } from "forge-std/Test.sol";
 import { MockERC20 } from "solmate/src/test/utils/mocks/MockERC20.sol";
 import { PoolManager } from "v4-core/PoolManager.sol";

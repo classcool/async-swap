@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import { CSMM } from "../src/CSMM.sol";
-import { SetupDeploy } from "./SetupDeploy.sol";
+import { CSMM } from "../src/V1.sol";
+import { SetupDeploy } from "./V1Setup.sol";
 import { console } from "forge-std/Test.sol";
 import { Currency, IHooks, IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { PoolSwapTest } from "v4-core/test/PoolSwapTest.sol";
