@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { CSMM } from "../src/CSMM.sol";
+import { AsyncCSMM } from "../src/AsyncCSMM.sol";
 import { FFIHelper } from "./FFIHelper.sol";
 import { console } from "forge-std/Test.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
@@ -17,16 +17,16 @@ contract ExecuteAsyncOrderScript is FFIHelper {
   using CurrencyLibrary for Currency;
   using PoolIdLibrary for PoolKey;
 
-  CSMM hook;
+  AsyncCSMM hook;
   PoolId poolId;
   Currency currency0;
   Currency currency1;
   PoolKey key;
-  CSMM.AsyncOrder order;
+  AsyncCSMM.AsyncOrder order;
 
   function setUp() public {
     (address _hook,) = _getDeployedHook();
-    hook = CSMM(_hook);
+    hook = AsyncCSMM(_hook);
     uint256[] memory topics = _getPoolTopics();
     currency0 = Currency.wrap(address(uint160(topics[2])));
     currency1 = Currency.wrap(address(uint160(topics[3])));
@@ -37,9 +37,6 @@ contract ExecuteAsyncOrderScript is FFIHelper {
   function swap() public { }
 
   function run() public {
-    vm.startBroadcast(OWNER);
-    hook.setExecutor(OWNER);
-    vm.stopBroadcast();
     vm.startBroadcast(OWNER);
     hook.executeOrder(key, order);
     vm.stopBroadcast();

@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { CSMM } from "../src/CSMM.sol";
+import { AsyncCSMM } from "../src/AsyncCSMM.sol";
+import { IAsyncSwap } from "../src/interfaces/IAsyncSwap.sol";
+import { IRouter } from "../src/interfaces/IRouter.sol";
+import { Router } from "../src/router.sol";
 import { FFIHelper } from "./FFIHelper.sol";
 import { console } from "forge-std/Test.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
@@ -17,22 +20,24 @@ contract SwapScript is FFIHelper {
   using CurrencyLibrary for Currency;
   using PoolIdLibrary for PoolKey;
 
-  CSMM hook;
+  AsyncCSMM hook;
   PoolId poolId;
   Currency currency0;
   Currency currency1;
   PoolKey key;
-  PoolSwapTest router;
+  Router router;
+  IAsyncSwap.AsyncOrder order;
 
   function setUp() public {
     (address _hook, address _router) = _getDeployedHook();
-    hook = CSMM(_hook);
-    router = PoolSwapTest(_router);
+    hook = AsyncCSMM(_hook);
+    router = Router(_router);
     uint256[] memory topics = _getPoolTopics();
     poolId = PoolId.wrap(bytes32(topics[1]));
     currency0 = Currency.wrap(address(uint160(topics[2])));
     currency1 = Currency.wrap(address(uint160(topics[3])));
     key = PoolKey(currency0, currency1, LPFeeLibrary.DYNAMIC_FEE_FLAG, 60, hook);
+    order = _getAsyncOrder();
   }
 
   function swap() public { }
@@ -48,18 +53,9 @@ contract SwapScript is FFIHelper {
     } else {
       IERC20Minimal(Currency.unwrap(currency1)).approve(address(router), uint256(amount));
     }
-    IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
-      zeroForOne: zeroForOne,
-      amountSpecified: -int256(amount),
-      sqrtPriceLimitX96: uint160(2 ** 96 + 1)
-    });
-    PoolSwapTest.TestSettings memory testSettings =
-      PoolSwapTest.TestSettings({ takeClaims: false, settleUsingBurn: false });
+    bytes memory routerData = abi.encode(OWNER);
 
-    bytes memory hookData =
-      abi.encode(CSMM.AsyncOrder({ poolId: poolId, owner: OWNER, zeroForOne: zeroForOne, amountIn: int256(amount) }));
-
-    router.swap(key, params, testSettings, hookData);
+    router.swap(order, routerData);
 
     vm.stopBroadcast();
   }

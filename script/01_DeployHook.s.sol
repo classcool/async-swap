@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import { CSMM } from "../src/CSMM.sol";
+import { AsyncCSMM } from "../src/AsyncCSMM.sol";
+import { Router } from "../src/router.sol";
 import { FFIHelper } from "./FFIHelper.sol";
 import { console } from "forge-std/Test.sol";
-import { IHooks } from "v4-core/interfaces/IHooks.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { Hooks } from "v4-core/libraries/Hooks.sol";
-
 import { PoolSwapTest } from "v4-core/test/PoolSwapTest.sol";
 import { HookMiner } from "v4-periphery/src/utils/HookMiner.sol";
 
@@ -15,8 +14,8 @@ import { HookMiner } from "v4-periphery/src/utils/HookMiner.sol";
 contract DeployHookScript is FFIHelper {
 
   IPoolManager manager;
-  IHooks public hook;
-  PoolSwapTest router;
+  AsyncCSMM public hook;
+  Router router;
 
   function setUp() public {
     manager = IPoolManager(_getDeployedPoolManager());
@@ -32,13 +31,13 @@ contract DeployHookScript is FFIHelper {
 
     /// @dev compute create2 salt
     (address hookAddress, bytes32 salt) =
-      HookMiner.find(CREATE2_FACTORY, hookFlags, type(CSMM).creationCode, abi.encode(address(manager), OWNER));
+      HookMiner.find(CREATE2_FACTORY, hookFlags, type(AsyncCSMM).creationCode, abi.encode(address(manager)));
 
     /// @dev deploy hook
-    hook = new CSMM{ salt: salt }(manager, OWNER);
+    hook = new AsyncCSMM{ salt: salt }(manager);
     assert(address(hook) == hookAddress);
 
-    router = new PoolSwapTest(manager);
+    router = new Router(manager, hook);
 
     vm.stopBroadcast();
   }

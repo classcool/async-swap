@@ -6,7 +6,7 @@ import { Script, console } from "forge-std/Script.sol";
 import { PoolManager } from "v4-core/PoolManager.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 
-contract DeployPoolManager is Script, FFIHelper {
+contract DeployPoolManager is FFIHelper {
 
   IPoolManager manager;
 

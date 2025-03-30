@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { CSMM } from "../src/CSMM.sol";
+import { AsyncCSMM } from "../src/AsyncCSMM.sol";
+import { IAsyncSwap } from "../src/interfaces/IAsyncSwap.sol";
 import { Script, console } from "forge-std/Script.sol";
 import { stdJson } from "forge-std/Test.sol";
 import { IHooks } from "v4-core/interfaces/IHooks.sol";
-
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
+import { LPFeeLibrary } from "v4-core/libraries/LPFeeLibrary.sol";
+import { Currency } from "v4-core/types/Currency.sol";
 import { PoolId } from "v4-core/types/PoolId.sol";
+import { PoolKey } from "v4-core/types/PoolKey.sol";
 
 contract FFIHelper is Script {
 
@@ -92,7 +95,7 @@ contract FFIHelper is Script {
     address owner;
   }
 
-  function _getAsyncOrder() internal returns (CSMM.AsyncOrder memory) {
+  function _getAsyncOrder() internal returns (IAsyncSwap.AsyncOrder memory) {
     string memory root = vm.projectRoot();
     string memory broadcastUrl = "/broadcast/04_Swap.s.sol/";
     if (chain == SelectChain.UnichainSepolia) {
@@ -115,10 +118,21 @@ contract FFIHelper is Script {
     uint256[] memory topics = json.readUintArray(".receipts[1].logs[1].topics");
     OrderData memory orderData = abi.decode(data, (OrderData));
     bool zeroForOne = topics[1] == 0 ? false : true;
-    int256 amountIn = int256(topics[2]);
-    CSMM.AsyncOrder memory order =
-      CSMM.AsyncOrder({ poolId: orderData.poolId, owner: orderData.owner, zeroForOne: zeroForOne, amountIn: amountIn });
+    uint256 amountIn = uint256(topics[2]);
+    PoolKey memory key = _getPoolKey();
+
+    IAsyncSwap.AsyncOrder memory order =
+      IAsyncSwap.AsyncOrder(key, orderData.owner, zeroForOne, amountIn, 2 ** 96, OWNER);
     return order;
+  }
+
+  function _getPoolKey() internal returns (PoolKey memory) {
+    uint256[] memory keyTopics = _getPoolTopics();
+    (address hook,) = _getDeployedHook();
+    Currency currency0 = Currency.wrap(address(uint160(keyTopics[2])));
+    Currency currency1 = Currency.wrap(address(uint160(keyTopics[3])));
+    PoolKey memory key = PoolKey(currency0, currency1, LPFeeLibrary.DYNAMIC_FEE_FLAG, 60, AsyncCSMM(hook));
+    return key;
   }
 
 }
