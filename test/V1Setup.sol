@@ -11,8 +11,8 @@ import { Hooks } from "v4-core/libraries/Hooks.sol";
 import { PoolId } from "v4-core/types/PoolId.sol";
 import { PoolKey } from "v4-core/types/PoolKey.sol";
 
-/// @title A counter hook test contract
-/// @notice Use as example only for project setup
+/// @title Setup Deploy
+/// @notice A common shared setup for running tests
 contract SetupDeploy is Test {
 
   address owner = makeAddr("deployer");

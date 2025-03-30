@@ -9,8 +9,7 @@ import { PoolSwapTest } from "v4-core/test/PoolSwapTest.sol";
 import { CurrencyLibrary } from "v4-core/types/Currency.sol";
 import { PoolKey } from "v4-core/types/PoolKey.sol";
 
-/// @title A Test contract
-/// @notice CSMM tests
+/// @title CSMM Test contract
 contract CsmmTest is SetupDeploy {
 
   using CurrencyLibrary for Currency;
