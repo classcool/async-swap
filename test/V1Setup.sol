@@ -13,7 +13,7 @@ import { PoolKey } from "v4-core/types/PoolKey.sol";
 
 /// @title Setup Deploy
 /// @notice A common shared setup for running tests
-contract SetupDeploy is Test {
+contract V1Setup is Test {
 
   address owner = makeAddr("deployer");
   address asyncExecutor = makeAddr("asyncExecutor");
@@ -66,7 +66,7 @@ contract SetupDeploy is Test {
     uint160 hookFlags =
       uint160(Hooks.BEFORE_SWAP_FLAG | Hooks.BEFORE_ADD_LIQUIDITY_FLAG | Hooks.BEFORE_SWAP_RETURNS_DELTA_FLAG);
     vm.startPrank(owner);
-    deployCodeTo("CSMM.sol", abi.encode(manager, owner), address(hookFlags));
+    deployCodeTo("V1.sol", abi.encode(manager, owner), address(hookFlags));
     hook = CSMM(address(hookFlags));
     hook.setExecutor(asyncExecutor);
   }

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import { CSMM } from "../src/V1.sol";
-import { SetupDeploy } from "./V1Setup.sol";
+import { V1Setup } from "./V1Setup.sol";
 import { console } from "forge-std/Test.sol";
 import { Currency, IHooks, IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { PoolSwapTest } from "v4-core/test/PoolSwapTest.sol";
@@ -10,7 +10,7 @@ import { CurrencyLibrary } from "v4-core/types/Currency.sol";
 import { PoolKey } from "v4-core/types/PoolKey.sol";
 
 /// @title CSMM Test contract
-contract CsmmTest is SetupDeploy {
+contract CsmmTest is V1Setup {
 
   using CurrencyLibrary for Currency;
 
