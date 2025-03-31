@@ -38,8 +38,6 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
   event HookModifyLiquidity(bytes32 indexed id, address indexed sender, int128 amount0, int128 amount1);
 
   address asyncExecutor;
-  uint24 FEE = 3000; // 0.3%
-  uint24 FeePips = 10000; // 0.0001 pips
 
   error AddLiquidityThroughHook();
 
