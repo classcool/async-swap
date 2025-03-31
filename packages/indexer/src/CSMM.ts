@@ -10,22 +10,21 @@ wss.on("connection", (ws: WebSocket) => {
 	clients.push(ws);
 });
 
-ponder.on("CsmmHook:BeforeAddLiquidity", async ({ event, context }) => {
+ponder.on("CsmmHook:HookModifyLiquidity", async ({ event, context }) => {
 	await context.db
 		.insert(schema.liquidity)
 		.values({
 			id: event.transaction.hash,
-			poolId: event.args.poolId,
+			poolId: event.args.id,
 			sender: event.args.sender,
-			tickLower: 0,
-			tickUpper: 0,
-			liquidityDelta: event.args.liquidityDelta,
-			salt: toHex(0),
+			amount0: event.args.amount0,
+			amount1: event.args.amount1,
 			chainId: context.network.chainId,
 			timestamp: event.block.timestamp,
 		})
 		.onConflictDoUpdate((row) => ({
-			liquidityDelta: row.liquidityDelta + event.args.liquidityDelta,
+			amount0: row.amount0 + event.args.amount0,
+			amount1: row.amount1 + event.args.amount1,
 			timestamp: event.block.timestamp,
 		}));
 
@@ -47,16 +46,17 @@ ponder.on("CsmmHook:BeforeAddLiquidity", async ({ event, context }) => {
 			client.send(
 				JSON.stringify({
 					message: "Add Liquidity",
-					poolId: event.args.poolId,
+					poolId: event.args.id,
 					sender: event.args.sender,
-					liquidityDelta: toHex(event.args.liquidityDelta),
+					amount0: toHex(event.args.amount0),
+					amount1: toHex(event.args.amount1),
 				}),
 			);
 		}
 	}
 });
 
-ponder.on("CsmmHook:BeforeSwap", async ({ event, context }) => {
+ponder.on("CsmmHook:AsyncSwapOrder", async ({ event, context }) => {
 	await context.db
 		.insert(schema.order)
 		.values({
@@ -68,7 +68,7 @@ ponder.on("CsmmHook:BeforeSwap", async ({ event, context }) => {
 			timestamp: event.block.timestamp,
 		})
 		.onConflictDoUpdate((row) => ({
-		orderStatus: false,
+			orderStatus: false,
 			amountIn: row.amountIn + event.args.amountIn,
 			timestamp: event.block.timestamp,
 		}));

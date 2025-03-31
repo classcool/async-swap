@@ -89,10 +89,8 @@ export const liquidity = onchainTable(
 		id: t.hex().notNull(),
 		poolId: t.hex().notNull(),
 		sender: t.hex().notNull(),
-		tickLower: t.integer().notNull(),
-		tickUpper: t.integer().notNull(),
-		liquidityDelta: t.bigint().notNull(),
-		salt: t.hex().notNull(),
+		amount0: t.bigint().notNull(),
+		amount1: t.bigint().notNull(),
 		chainId: t.integer().notNull(),
 		timestamp: t
 			.bigint()
@@ -100,13 +98,7 @@ export const liquidity = onchainTable(
 	}),
 	(table) => ({
 		pk: primaryKey({
-			columns: [
-				table.poolId,
-				table.sender,
-				table.chainId,
-				table.tickLower,
-				table.tickUpper,
-			],
+			columns: [table.poolId, table.sender, table.chainId],
 		}),
 	}),
 );
