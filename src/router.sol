@@ -39,11 +39,10 @@ contract Router is IRouter {
   }
 
   function swap(IAsyncSwap.AsyncOrder calldata order, bytes memory userData) external {
-    IAsyncCSMM.UserParams memory user = abi.decode(userData, (IAsyncCSMM.UserParams));
-    address executor = user.executor;
+    address onBehalf = address(this);
     assembly ("memory-safe") {
       tstore(USSR_LOCATION, caller())
-      tstore(ASYNC_Filler_LOCATION, executor)
+      tstore(ASYNC_Filler_LOCATION, onBehalf)
     }
 
     poolManager.unlock(abi.encode(SwapCallback(ActionType.Swap, order)));
@@ -74,7 +73,7 @@ contract Router is IRouter {
   /// @notice Hook will process user calling the hook directly to add liquidity
   /// @notice PoolManager calls after implementation of router.addLiquidity() and router.swap()
   function unlockCallback(bytes calldata data) external onlyPoolManager returns (bytes memory) {
-    bytes32 action;
+    uint8 action;
     address user;
     address asyncFiller;
 
@@ -85,19 +84,16 @@ contract Router is IRouter {
       asyncFiller := tload(ASYNC_Filler_LOCATION)
     }
 
-    /// @notice Handle Async Order Fill
-    /// @dev FillingOrder
-    if (action == bytes32(uint256(2))) {
-      SwapCallback memory orderData = abi.decode(data, (SwapCallback));
-      Currency currency = orderData.order.zeroForOne ? orderData.order.key.currency1 : orderData.order.key.currency0;
-      assert(IERC20Minimal(Currency.unwrap(currency)).transferFrom(user, asyncFiller, orderData.order.amountIn));
-      assert(IERC20Minimal(Currency.unwrap(currency)).approve(address(hook), orderData.order.amountIn));
-      hook.executeOrder(orderData.order, abi.encode(asyncFiller));
+    /// @notice Handle Add LLquidity
+    /// @dev process ActionType.Liquidity
+    if (action == 0) {
+      LiquidityCallback memory orderData = abi.decode(data, (LiquidityCallback));
+      hook.addLiquidity(orderData.csmmLiq);
     }
 
     /// @dev Handle Swap
     /// @dev process ActionType.Swap
-    if (action == bytes32(uint256(1))) {
+    if (action == 1) {
       SwapCallback memory orderData = abi.decode(data, (SwapCallback));
 
       poolManager.swap(
@@ -109,15 +105,16 @@ contract Router is IRouter {
       );
       Currency specified = orderData.order.zeroForOne ? orderData.order.key.currency0 : orderData.order.key.currency1;
       specified.settle(poolManager, user, orderData.order.amountIn, false); // transfer
-      return "";
     }
 
-    /// @notice Handle Add LLquidity
-    /// @dev process ActionType.Liquidity
-    if (action == bytes32(0)) {
-      LiquidityCallback memory orderData = abi.decode(data, (LiquidityCallback));
-      hook.addLiquidity(orderData.csmmLiq);
-      return "";
+    /// @notice Handle Async Order Fill
+    /// @dev FillingOrder
+    if (action == 2) {
+      SwapCallback memory orderData = abi.decode(data, (SwapCallback));
+      Currency currency = orderData.order.zeroForOne ? orderData.order.key.currency1 : orderData.order.key.currency0;
+      assert(IERC20Minimal(Currency.unwrap(currency)).transferFrom(user, asyncFiller, orderData.order.amountIn));
+      assert(IERC20Minimal(Currency.unwrap(currency)).approve(address(hook), orderData.order.amountIn));
+      hook.executeOrder(orderData.order, abi.encode(asyncFiller));
     }
 
     return "";
