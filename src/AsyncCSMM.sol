@@ -71,8 +71,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     revert AddLiquidityThroughHook();
   }
 
-  /// @notice Allows adding liwuidity through hook
-  /// @dev Custom add liquidity function
+  /// @notice Allows adding liquidity through hook
   function addLiquidity(IAsyncCSMM.CSMMLiquidityParams calldata liq) external {
     bytes32 poolId = PoolId.unwrap(liq.key.toId());
     liq.key.currency0.settle(poolManager, liq.owner, liq.amount0, false); // transfer
@@ -106,7 +105,6 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     require(isExecutor(order, msg.sender), "Caller is valid not excutor");
 
     /// @dev Transfer currency of async order to user
-    /// @dev No fee to user for filled order
     Currency currencyTake;
     Currency currencyFill;
     if (order.zeroForOne) {
@@ -114,7 +112,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
       currencyFill = order.key.currency1;
     } else {
       currencyTake = order.key.currency1;
-      currencyFill = order.key.currency1;
+      currencyFill = order.key.currency0;
     }
 
     asyncOrders[poolId][order.owner][order.zeroForOne] -= amountToFill;
