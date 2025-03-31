@@ -25,7 +25,7 @@ contract Router is IRouter {
   // keccak256("Router.ActionType") - 1;
   bytes32 constant ACTION_LOCATION = 0xf3b150ebf41dad0872df6788629edb438733cb4a5c9ea779b1b1f3614faffc69;
   // keccak256("Router.User") - 1;
-  bytes32 constant USSR_LOCATION = 0x3dde20d9bf5cc25a9f487c6d6b54d3c19e3fa4738b91a7a509d4fc4180a72356;
+  bytes32 constant USER_LOCATION = 0x3dde20d9bf5cc25a9f487c6d6b54d3c19e3fa4738b91a7a509d4fc4180a72356;
   bytes32 constant ASYNC_Filler_LOCATION = 0xd972a937b59dc5cb8c692dd9f211e85afa8def4caee6e05b31db0f53e16d02e0;
 
   constructor(IPoolManager _poolManager, IAsyncCSMM _hook) {
@@ -43,7 +43,7 @@ contract Router is IRouter {
     IAsyncCSMM.UserParams memory userParams = abi.decode(userData, (IAsyncCSMM.UserParams));
     require(userParams.executor == address(this), "Use router as your executor!");
     assembly ("memory-safe") {
-      tstore(USSR_LOCATION, caller())
+      tstore(USER_LOCATION, caller())
       tstore(ASYNC_Filler_LOCATION, onBehalf)
     }
 
@@ -52,7 +52,7 @@ contract Router is IRouter {
 
   function addLiquidity(PoolKey calldata key, uint256 amount0, uint256 amount1) external {
     assembly ("memory-safe") {
-      tstore(USSR_LOCATION, caller())
+      tstore(USER_LOCATION, caller())
     }
     poolManager.unlock(
       abi.encode(
@@ -64,7 +64,7 @@ contract Router is IRouter {
   function fillOrder(IAsyncSwap.AsyncOrder calldata order, bytes calldata) external {
     address onBehalf = address(this);
     assembly ("memory-safe") {
-      tstore(USSR_LOCATION, caller())
+      tstore(USER_LOCATION, caller())
       tstore(ASYNC_Filler_LOCATION, onBehalf)
     }
 
@@ -82,7 +82,7 @@ contract Router is IRouter {
     assembly ("memory-safe") {
       tstore(ACTION_LOCATION, calldataload(0x44))
       action := tload(ACTION_LOCATION)
-      user := tload(USSR_LOCATION)
+      user := tload(USER_LOCATION)
       asyncFiller := tload(ASYNC_Filler_LOCATION)
     }
 
