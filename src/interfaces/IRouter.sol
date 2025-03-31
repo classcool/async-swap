@@ -9,7 +9,7 @@ interface IRouter {
   enum ActionType {
     Liquidity,
     Swap,
-    RemoveLiquidity
+    FillOrder
   }
 
   struct SwapCallback {
@@ -22,6 +22,8 @@ interface IRouter {
     IAsyncCSMM.CSMMLiquidityParams csmmLiq;
   }
 
-  function swap(IAsyncSwap.AsyncOrder calldata orderParams, bytes memory routerData) external;
+  function swap(IAsyncSwap.AsyncOrder calldata order, bytes calldata userData) external;
+
+  function fillOrder(IAsyncSwap.AsyncOrder calldata order, bytes calldata userData) external;
 
 }
