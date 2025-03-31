@@ -27,21 +27,16 @@ contract AddLiquidityScript is FFIHelper {
     (address _hook, address _router) = _getDeployedHook();
     hook = AsyncCSMM(_hook);
     router = Router(_router);
-    uint256[] memory topics = _getPoolTopics();
-    poolId = bytes32(topics[1]);
-    currency0 = Currency.wrap(address(uint160(topics[2])));
-    currency1 = Currency.wrap(address(uint160(topics[3])));
+    key = _getPoolKey();
   }
 
   function run() public {
-    key = PoolKey(currency0, currency1, LPFeeLibrary.DYNAMIC_FEE_FLAG, 60, hook);
-
     vm.startBroadcast(OWNER);
 
     uint256 amount = 100;
 
-    IERC20Minimal(Currency.unwrap(currency0)).approve(address(hook), amount);
-    IERC20Minimal(Currency.unwrap(currency1)).approve(address(hook), amount);
+    IERC20Minimal(Currency.unwrap(key.currency0)).approve(address(hook), amount);
+    IERC20Minimal(Currency.unwrap(key.currency1)).approve(address(hook), amount);
 
     router.addLiquidity(key, amount, amount);
 

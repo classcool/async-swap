@@ -32,11 +32,6 @@ contract SwapScript is FFIHelper {
     (address _hook, address _router) = _getDeployedHook();
     hook = AsyncCSMM(_hook);
     router = Router(_router);
-    uint256[] memory topics = _getPoolTopics();
-    poolId = PoolId.wrap(bytes32(topics[1]));
-    currency0 = Currency.wrap(address(uint160(topics[2])));
-    currency1 = Currency.wrap(address(uint160(topics[3])));
-    key = PoolKey(currency0, currency1, LPFeeLibrary.DYNAMIC_FEE_FLAG, 60, hook);
     order = _getAsyncOrder();
   }
 
@@ -49,12 +44,12 @@ contract SwapScript is FFIHelper {
     bool zeroForOne = true;
 
     if (zeroForOne) {
-      IERC20Minimal(Currency.unwrap(currency0)).approve(address(router), uint256(amount));
+      IERC20Minimal(Currency.unwrap(order.key.currency0)).approve(address(router), uint256(amount));
     } else {
-      IERC20Minimal(Currency.unwrap(currency1)).approve(address(router), uint256(amount));
+      IERC20Minimal(Currency.unwrap(order.key.currency1)).approve(address(router), uint256(amount));
     }
 
-    bytes memory routerData = abi.encode(OWNER, OWNER);
+    bytes memory routerData = abi.encode(OWNER, router);
     router.swap(order, routerData);
 
     vm.stopBroadcast();
