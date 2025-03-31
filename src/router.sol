@@ -72,7 +72,7 @@ contract Router is IRouter {
   }
 
   /// @notice Handles callback data from PoolManager.unlock()
-  /// @notice Hook will process user calling the hook directly to add liquidity
+  /// @notice Hook will process user calling the hook directly to add liquidity, swap, or fill async transactions
   /// @notice PoolManager calls after implementation of router.addLiquidity() and router.swap()
   function unlockCallback(bytes calldata data) external onlyPoolManager returns (bytes memory) {
     uint8 action;
