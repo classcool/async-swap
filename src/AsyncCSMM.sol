@@ -86,19 +86,19 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
   }
 
   /// @notice Check if user is executor address
-  function isExecutor(AsyncOrder calldata order, address executor) public returns (bool) {
+  function isExecutor(AsyncOrder calldata order, address executor) public view returns (bool) {
     return (setExecutor[order.owner][executor] || order.owner == executor);
   }
 
-  function calculateHookFee(uint256 amount) public view returns (uint256) {
+  function calculateHookFee(uint256) public pure returns (uint256) {
     return 0;
   }
 
-  function calculatePoolFee(uint24 poolFee, uint256 amount) public view returns (uint256) {
+  function calculatePoolFee(uint24, uint256) public pure returns (uint256) {
     return 0;
   }
 
-  function executeOrder(AsyncOrder calldata order, bytes calldata hookData) external {
+  function executeOrder(AsyncOrder calldata order, bytes calldata) external {
     if (order.amountIn == 0) revert ZeroFillOrder();
 
     PoolId poolId = order.key.toId();
