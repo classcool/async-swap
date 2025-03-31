@@ -120,7 +120,8 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     emit AsyncOrderFilled(poolId, order.owner, order.zeroForOne, amountToFill);
 
     /// @dev Take currencyFill from filler
-    /// @dev Hook will charge filler a hook fee
+    /// @dev Hook may charge filler a hook fee
+		/// TODO: If fee it take emit HookFee event
     uint256 debtTaken = calculateHookFee(amountToFill);
     currencyFill.take(poolManager, address(this), amountToFill - debtTaken, true);
     currencyFill.settle(poolManager, msg.sender, amountToFill, false); // transfer
