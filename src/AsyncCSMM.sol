@@ -23,6 +23,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
   using PoolIdLibrary for PoolKey;
 
   mapping(PoolId poolId => mapping(address user => mapping(bool zeroForOne => uint256 claimable))) public asyncOrders;
+  mapping(address owner => mapping(address executor => bool)) public setExecutor;
 
   /// @dev Event emitted when a swap is executed.
   event HookSwap(
@@ -76,17 +77,17 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
   /// @dev Custom add liquidity function
   function addLiquidity(IAsyncCSMM.CSMMLiquidityParams calldata liq) external {
     bytes32 poolId = PoolId.unwrap(liq.key.toId());
-    liq.key.currency0.settle(poolManager, liq.owner, liq.amountEach, false);
-    liq.key.currency1.settle(poolManager, liq.owner, liq.amountEach, false);
+    liq.key.currency0.settle(poolManager, liq.owner, liq.amount0, false); // transfer
+    liq.key.currency1.settle(poolManager, liq.owner, liq.amount1, false); // transfer
 
-    liq.key.currency0.take(poolManager, address(this), liq.amountEach, true);
-    liq.key.currency1.take(poolManager, address(this), liq.amountEach, true);
-    emit HookModifyLiquidity(poolId, msg.sender, liq.amountEach.toInt128(), liq.amountEach.toInt128());
+    liq.key.currency0.take(poolManager, address(this), liq.amount0, true);
+    liq.key.currency1.take(poolManager, address(this), liq.amount0, true);
+    emit HookModifyLiquidity(poolId, msg.sender, liq.amount0.toInt128(), liq.amount1.toInt128());
   }
 
   /// @notice Check if user is executor address
-  function isExecutor(AsyncOrder calldata order, address executor) public pure returns (bool) {
-    return (order.executor == executor || order.owner == executor);
+  function isExecutor(AsyncOrder calldata order, address executor) public returns (bool) {
+    return (setExecutor[order.owner][executor] || order.owner == executor);
   }
 
   function calculateHookFee(uint256 amount) public view returns (uint256) {
@@ -97,40 +98,36 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     return 0;
   }
 
-  function executeOrder(PoolKey calldata key, AsyncOrder calldata order) external {
-    uint256 amountToFill = uint256(order.amountIn);
-    PoolId poolId = key.toId();
-    uint256 claimableAmount = asyncOrders[poolId][order.owner][order.zeroForOne];
+  function executeOrder(AsyncOrder calldata order, bytes calldata hookData) external {
+    if (order.amountIn == 0) revert ZeroFillOrder();
 
+    PoolId poolId = order.key.toId();
+    uint256 amountToFill = uint256(order.amountIn);
+    uint256 claimableAmount = asyncOrders[poolId][order.owner][order.zeroForOne];
     require(amountToFill <= claimableAmount, "Max fill order limit exceed");
     require(isExecutor(order, msg.sender), "Caller is valid not excutor");
-    if (order.amountIn != 0) revert ZeroFillOrder();
 
     /// @dev Transfer currency of async order to user
     /// @dev No fee to user for filled order
     Currency currencyTake;
     Currency currencyFill;
     if (order.zeroForOne) {
-      currencyTake = key.currency0;
-      currencyFill = key.currency1;
+      currencyTake = order.key.currency0;
+      currencyFill = order.key.currency1;
     } else {
-      currencyTake = key.currency1;
-      currencyFill = key.currency1;
-    }
-    uint256 claimable = asyncOrders[poolId][order.owner][order.zeroForOne];
-    if (claimable >= amountToFill) {
-      asyncOrders[poolId][order.owner][order.zeroForOne] -= amountToFill;
-      poolManager.transfer(order.owner, currencyTake.toId(), amountToFill);
-      emit AsyncOrderFilled(poolId, order.owner, order.zeroForOne, amountToFill);
-    } else {
-      revert InvalidOrder();
+      currencyTake = order.key.currency1;
+      currencyFill = order.key.currency1;
     }
 
-    /// @dev Take currencyFill from executor
-    /// @dev Hook will charge executor a hook fee
+    asyncOrders[poolId][order.owner][order.zeroForOne] -= amountToFill;
+    poolManager.transfer(order.owner, currencyTake.toId(), amountToFill);
+    emit AsyncOrderFilled(poolId, order.owner, order.zeroForOne, amountToFill);
+
+    /// @dev Take currencyFill from filler
+    /// @dev Hook will charge filler a hook fee
     uint256 debtTaken = calculateHookFee(amountToFill);
-    currencyFill.settle(poolManager, order.executor, amountToFill, true);
     currencyFill.take(poolManager, address(this), amountToFill - debtTaken, true);
+    currencyFill.settle(poolManager, msg.sender, amountToFill, false); // transfer
     uint256 currClaimables = asyncOrders[poolId][order.owner][!order.zeroForOne];
     asyncOrders[poolId][order.owner][!order.zeroForOne] = currClaimables + debtTaken;
   }
@@ -144,12 +141,15 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     IPoolManager.SwapParams calldata params,
     bytes calldata hookParams
   ) internal override returns (bytes4, BeforeSwapDelta, uint24) {
+    /// @dev Async swaps only work for exact-input swaps
+    if (params.amountSpecified > 0) {
+      revert("Hook only support ExectInput Amount");
+    }
+
     PoolId poolId = key.toId();
     uint256 amountTaken = uint256(-params.amountSpecified);
-    address user = abi.decode(hookParams, (address));
+    UserParams memory hookData = abi.decode(hookParams, (UserParams));
 
-    /// @dev Async swaps only work for exact-input swaps
-    if (params.amountSpecified > 0) { }
     /// @dev Specify the input token
     Currency specified = params.zeroForOne ? key.currency0 : key.currency1;
 
@@ -157,13 +157,14 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     specified.take(poolManager, address(this), amountTaken, true);
     uint256 feeAmount = calculatePoolFee(key.fee, amountTaken);
     uint256 loanTaken = amountTaken - feeAmount;
-    emit AsyncSwapOrder(poolId, user, params.zeroForOne, loanTaken.toInt256());
+    setExecutor[hookData.user][hookData.executor] = true;
+    emit AsyncSwapOrder(poolId, hookData.user, params.zeroForOne, loanTaken.toInt256());
 
     /// @dev Issue 1:1 claimableAmount - pool fee to user
     /// @dev Add amount taken to previous claimableAmount
     /// @dev Take pool fee for LP
-    uint256 currClaimables = asyncOrders[poolId][user][params.zeroForOne];
-    asyncOrders[poolId][user][params.zeroForOne] = currClaimables + loanTaken;
+    uint256 currClaimables = asyncOrders[poolId][hookData.user][params.zeroForOne];
+    asyncOrders[poolId][hookData.user][params.zeroForOne] = currClaimables + loanTaken;
 
     /// @dev Hook event
     /// @reference
