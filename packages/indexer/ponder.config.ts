@@ -3,8 +3,8 @@ import { http, getAddress, hexToNumber } from "viem";
 import type { Hex } from "viem";
 import DeployPoolManager from "../../broadcast/00_DeployPoolManager.s.sol/31337/run-latest.json";
 import DeployHook from "../../broadcast/01_DeployHook.s.sol/31337/run-latest.json";
+import { AsyncCSMMAbi } from "./abis/AsyncCSMM";
 import { PoolManagerAbi } from "./abis/PoolManagerAbi";
-import { counterHookAbi, csmmAbi } from "./abis/generated";
 
 const poolManagerAddress = getAddress(
 	DeployPoolManager.transactions[0]?.contractAddress as Hex,
@@ -36,15 +36,6 @@ export default createConfig({
 			},
 			abi: PoolManagerAbi,
 		},
-		CounterHook: {
-			network: {
-				anvil: {
-					address: hookAddress,
-					startBlock: hookStartBlock,
-				},
-			},
-			abi: counterHookAbi,
-		},
 		CsmmHook: {
 			network: {
 				anvil: {
@@ -52,7 +43,7 @@ export default createConfig({
 					startBlock: hookStartBlock,
 				},
 			},
-			abi: csmmAbi,
+			abi: AsyncCSMMAbi,
 		},
 	},
 });
