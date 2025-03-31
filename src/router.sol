@@ -38,7 +38,7 @@ contract Router is IRouter {
     _;
   }
 
-  function swap(IAsyncSwap.AsyncOrder calldata order, bytes memory userData) external {
+  function swap(IAsyncSwap.AsyncOrder calldata order, bytes memory) external {
     address onBehalf = address(this);
     assembly ("memory-safe") {
       tstore(USSR_LOCATION, caller())
