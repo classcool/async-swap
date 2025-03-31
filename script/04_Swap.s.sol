@@ -32,7 +32,7 @@ contract SwapScript is FFIHelper {
     (address _hook, address _router) = _getDeployedHook();
     hook = AsyncCSMM(_hook);
     router = Router(_router);
-    order = _getAsyncOrder();
+    key = _getPoolKey();
   }
 
   function swap() public { }
@@ -42,6 +42,7 @@ contract SwapScript is FFIHelper {
 
     uint256 amount = 100;
     bool zeroForOne = true;
+    order = IAsyncSwap.AsyncOrder(key, OWNER, zeroForOne, amount, 2 ** 96);
 
     if (zeroForOne) {
       IERC20Minimal(Currency.unwrap(order.key.currency0)).approve(address(router), uint256(amount));
