@@ -16,7 +16,6 @@ import { PoolKey } from "v4-core/types/PoolKey.sol";
 contract SetupHook is Test {
 
   address owner = makeAddr("deployer");
-  address asyncExecutor = makeAddr("asyncExecutor");
   IPoolManager manager;
   PoolKey key;
   AsyncCSMM hook;
@@ -52,7 +51,7 @@ contract SetupHook is Test {
     uint256 amount = 10 ether;
     token0.approve(address(hook), amount);
     token1.approve(address(hook), amount);
-    router.addLiquidity(key, amount);
+    router.addLiquidity(key, amount, amount);
   }
 
   function mint() public ownerAction {

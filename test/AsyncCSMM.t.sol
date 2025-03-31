@@ -16,11 +16,15 @@ contract AsyncCsmmTest is SetupHook {
 
   using CurrencyLibrary for Currency;
 
+  address asyncFiller = makeAddr("asyncFiller");
   address user = makeAddr("user");
+  address user2 = makeAddr("user2");
 
   function setUp() public override {
     super.setUp();
-    topUp(user);
+    topUp(user, 1 ether);
+    topUp(user2, 2 ether);
+    asyncFiller = address(router);
   }
 
   modifier userAction() {
@@ -29,9 +33,9 @@ contract AsyncCsmmTest is SetupHook {
     vm.stopPrank();
   }
 
-  function topUp(address _user) public ownerAction {
-    token0.transfer(_user, 1 ether);
-    token1.transfer(_user, 1 ether);
+  function topUp(address _user, uint256 amount) public ownerAction {
+    token0.transfer(_user, amount);
+    token1.transfer(_user, amount);
   }
 
   function testAsyncSwap() public {
@@ -48,16 +52,10 @@ contract AsyncCsmmTest is SetupHook {
       token1.approve(address(router), amount);
     }
 
-    IAsyncSwap.AsyncOrder memory order = IAsyncSwap.AsyncOrder({
-      key: key,
-      owner: user,
-      zeroForOne: zeroForOne,
-      amountIn: amount,
-      sqrtPrice: 2 ** 96,
-      executor: address(this)
-    });
+    IAsyncSwap.AsyncOrder memory order =
+      IAsyncSwap.AsyncOrder({ key: key, owner: user, zeroForOne: zeroForOne, amountIn: amount, sqrtPrice: 2 ** 96 });
 
-    router.swap(order, abi.encode(user));
+    router.swap(order, abi.encode(user, asyncFiller));
     vm.stopPrank();
     // ------------------- //
 
@@ -69,6 +67,30 @@ contract AsyncCsmmTest is SetupHook {
 
     // user did not recieve token1 (AsyncSwap)
     assertEq(balance1Before, balance1After);
+
+    // user received a claimable balance
+    assertEq(hook.asyncOrders(poolId, user, zeroForOne), amount);
+
+    // Async executor after order
+    vm.startPrank(user2);
+    token0.approve(address(hook), amount);
+    token1.approve(address(hook), amount);
+    router.addLiquidity(key, amount, amount);
+
+    if (zeroForOne) {
+      token1.approve(address(router), amount);
+    } else {
+      token0.approve(address(router), amount);
+    }
+    router.fillOrder(order, abi.encode(asyncFiller));
+    vm.stopPrank();
+
+    assertEq(hook.asyncOrders(poolId, user, zeroForOne), 0);
+    if (zeroForOne) {
+      assertEq(manager.balanceOf(user, currency0.toId()), uint256(amount));
+    } else {
+      assertEq(manager.balanceOf(user, currency1.toId()), uint256(amount));
+    }
   }
 
   function testFuzzAsyncSwapOrder(bool zeroForOne, uint256 amount, bool settleUsingBurn) public userAction {
@@ -87,16 +109,10 @@ contract AsyncCsmmTest is SetupHook {
       token1.approve(address(router), amount);
     }
 
-    IAsyncSwap.AsyncOrder memory order = IAsyncSwap.AsyncOrder({
-      key: key,
-      owner: user,
-      zeroForOne: zeroForOne,
-      amountIn: amount,
-      sqrtPrice: 2 ** 96,
-      executor: asyncExecutor
-    });
+    IAsyncSwap.AsyncOrder memory order =
+      IAsyncSwap.AsyncOrder({ key: key, owner: user, zeroForOne: zeroForOne, amountIn: amount, sqrtPrice: 2 ** 96 });
 
-    router.swap(order, abi.encode(user));
+    router.swap(order, abi.encode(user, asyncFiller));
 
     if (zeroForOne) {
       assertEq(currency0.balanceOf(user), userCurrency0Balance - uint256(amount));
@@ -113,18 +129,6 @@ contract AsyncCsmmTest is SetupHook {
     }
 
     assertEq(hook.asyncOrders(poolId, user, zeroForOne), uint256(amount));
-
-    // Async executor after order
-    // vm.startPrank(asyncExecutor);
-    // hook.executeOrder(key, order);
-    // vm.stopPrank();
-
-    // assertEq(hook.asyncOrders(poolId, user, zeroForOne), 0);
-    // if (zeroForOne) {
-    //   assertEq(manager.balanceOf(user, currency0.toId()), uint256(amount));
-    // } else {
-    //   assertEq(manager.balanceOf(user, currency1.toId()), uint256(amount));
-    // }
   }
 
 }
