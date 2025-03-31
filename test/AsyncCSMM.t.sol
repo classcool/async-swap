@@ -71,6 +71,9 @@ contract AsyncCsmmTest is SetupHook {
     // user received a claimable balance
     assertEq(hook.asyncOrders(poolId, user, zeroForOne), amount);
 
+    // check executor
+    assertEq(hook.setExecutor(user, asyncFiller), true);
+
     // Async executor after order
     vm.startPrank(user2);
     token0.approve(address(hook), amount);

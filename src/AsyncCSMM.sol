@@ -59,7 +59,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
       afterDonate: false,
       beforeSwapReturnDelta: true, // allow beforeSwap to return a custom delta, for custom ordering
       afterSwapReturnDelta: false,
-      afterAddLiquidityReturnDelta: false, // custom add liquidity
+      afterAddLiquidityReturnDelta: false,
       afterRemoveLiquidityReturnDelta: false
     });
   }
@@ -87,7 +87,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
 
   /// @notice Check if user is executor address
   function isExecutor(AsyncOrder calldata order, address executor) public view returns (bool) {
-    return (setExecutor[order.owner][executor] || order.owner == executor);
+    return setExecutor[order.owner][executor];
   }
 
   function calculateHookFee(uint256) public pure returns (uint256) {
