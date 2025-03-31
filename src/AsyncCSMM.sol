@@ -2,7 +2,6 @@
 pragma solidity 0.8.26;
 
 import { IAsyncCSMM } from "./interfaces/IAsyncCSMM.sol";
-import { ICSMM } from "./interfaces/ICSMM.sol";
 import { IRouter } from "./interfaces/IRouter.sol";
 import { CurrencySettler } from "@uniswap/v4-core/test/utils/CurrencySettler.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
