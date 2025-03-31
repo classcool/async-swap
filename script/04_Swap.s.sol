@@ -46,15 +46,15 @@ contract SwapScript is FFIHelper {
     vm.startBroadcast(OWNER);
 
     uint256 amount = 100;
-
     bool zeroForOne = true;
+
     if (zeroForOne) {
       IERC20Minimal(Currency.unwrap(currency0)).approve(address(router), uint256(amount));
     } else {
       IERC20Minimal(Currency.unwrap(currency1)).approve(address(router), uint256(amount));
     }
-    bytes memory routerData = abi.encode(OWNER);
 
+    bytes memory routerData = abi.encode(OWNER, OWNER);
     router.swap(order, routerData);
 
     vm.stopBroadcast();
