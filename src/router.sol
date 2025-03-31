@@ -60,7 +60,7 @@ contract Router is IRouter {
     );
   }
 
-  function fillOrder(IAsyncSwap.AsyncOrder calldata order, bytes calldata userData) external {
+  function fillOrder(IAsyncSwap.AsyncOrder calldata order, bytes calldata) external {
     address onBehalf = address(this);
     assembly ("memory-safe") {
       tstore(USSR_LOCATION, caller())
