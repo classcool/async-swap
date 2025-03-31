@@ -16,14 +16,13 @@ interface IAsyncSwap {
     bool zeroForOne;
     uint256 amountIn;
     uint160 sqrtPrice;
-    address executor;
   }
 
   error InvalidOrder();
   error ZeroFillOrder();
 
   function asyncOrders(PoolId poolId, address user, bool zeroForOne) external view returns (uint256 claimable);
-  function executeOrder(PoolKey memory key, AsyncOrder memory order) external;
+  function executeOrder(AsyncOrder memory order, bytes calldata userData) external;
   function isExecutor(AsyncOrder calldata order, address executor) external returns (bool);
 
 }
