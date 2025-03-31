@@ -43,7 +43,7 @@ contract AddLiquidityScript is FFIHelper {
     IERC20Minimal(Currency.unwrap(currency0)).approve(address(hook), amount);
     IERC20Minimal(Currency.unwrap(currency1)).approve(address(hook), amount);
 
-    router.addLiquidity(key, amount);
+    router.addLiquidity(key, amount, amount);
 
     vm.stopBroadcast();
   }

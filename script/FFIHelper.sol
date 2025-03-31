@@ -121,8 +121,7 @@ contract FFIHelper is Script {
     uint256 amountIn = uint256(topics[2]);
     PoolKey memory key = _getPoolKey();
 
-    IAsyncSwap.AsyncOrder memory order =
-      IAsyncSwap.AsyncOrder(key, orderData.owner, zeroForOne, amountIn, 2 ** 96, OWNER);
+    IAsyncSwap.AsyncOrder memory order = IAsyncSwap.AsyncOrder(key, orderData.owner, zeroForOne, amountIn, 2 ** 96);
     return order;
   }
 
