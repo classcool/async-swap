@@ -129,8 +129,6 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
   }
 
   /// @notice Creates async order that hook will fill in the future
-  /// @notice TODO: Implement exactOutput (Hook loan)
-  /// @dev Handles exactInputIn (Hook debt)
   function _beforeSwap(
     address sender,
     PoolKey calldata key,
@@ -151,16 +149,16 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
 
     /// @dev create hook debt
     specified.take(poolManager, address(this), amountTaken, true);
+    /// @dev Take pool fee for LP
     uint256 feeAmount = calculatePoolFee(key.fee, amountTaken);
-    uint256 loanTaken = amountTaken - feeAmount;
+    uint256 finalTaken = amountTaken - feeAmount;
     setExecutor[hookData.user][hookData.executor] = true;
-    emit AsyncSwapOrder(poolId, hookData.user, params.zeroForOne, loanTaken.toInt256());
+    emit AsyncSwapOrder(poolId, hookData.user, params.zeroForOne, finalTaken.toInt256());
 
     /// @dev Issue 1:1 claimableAmount - pool fee to user
     /// @dev Add amount taken to previous claimableAmount
-    /// @dev Take pool fee for LP
     uint256 currClaimables = asyncOrders[poolId][hookData.user][params.zeroForOne];
-    asyncOrders[poolId][hookData.user][params.zeroForOne] = currClaimables + loanTaken;
+    asyncOrders[poolId][hookData.user][params.zeroForOne] = currClaimables + finalTaken;
 
     /// @dev Hook event
     /// @reference
