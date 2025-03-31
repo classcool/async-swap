@@ -38,8 +38,10 @@ contract Router is IRouter {
     _;
   }
 
-  function swap(IAsyncSwap.AsyncOrder calldata order, bytes memory) external {
+  function swap(IAsyncSwap.AsyncOrder calldata order, bytes memory userData) external {
     address onBehalf = address(this);
+    IAsyncCSMM.UserParams memory userParams = abi.decode(userData, (IAsyncCSMM.UserParams));
+    require(userParams.executor == address(this), "Use router as your executor!");
     assembly ("memory-safe") {
       tstore(USSR_LOCATION, caller())
       tstore(ASYNC_Filler_LOCATION, onBehalf)
