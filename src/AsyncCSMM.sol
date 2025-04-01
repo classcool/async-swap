@@ -6,6 +6,7 @@ import { IRouter } from "./interfaces/IRouter.sol";
 import { CurrencySettler } from "@uniswap/v4-core/test/utils/CurrencySettler.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { Hooks } from "v4-core/libraries/Hooks.sol";
+import { LPFeeLibrary } from "v4-core/libraries/LPFeeLibrary.sol";
 import { SafeCast } from "v4-core/libraries/SafeCast.sol";
 import { BeforeSwapDelta, BeforeSwapDeltaLibrary, toBeforeSwapDelta } from "v4-core/types/BeforeSwapDelta.sol";
 import { Currency } from "v4-core/types/Currency.sol";
@@ -42,9 +43,14 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
 
   constructor(IPoolManager poolManager) BaseHook(poolManager) { }
 
+  function _beforeInitialize(address, PoolKey calldata key, uint160) internal virtual override returns (bytes4) {
+    require(key.fee == LPFeeLibrary.DYNAMIC_FEE_FLAG, "Dude use dynamic fees flag");
+    return this.beforeInitialize.selector;
+  }
+
   function getHookPermissions() public pure override returns (Hooks.Permissions memory) {
     return Hooks.Permissions({
-      beforeInitialize: false,
+      beforeInitialize: true,
       afterInitialize: false,
       beforeAddLiquidity: true, // override liquidity functionality
       afterAddLiquidity: false,

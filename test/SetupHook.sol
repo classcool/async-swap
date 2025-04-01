@@ -8,6 +8,7 @@ import { MockERC20 } from "solmate/src/test/utils/mocks/MockERC20.sol";
 import { PoolManager } from "v4-core/PoolManager.sol";
 import { Currency, IHooks, IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { Hooks } from "v4-core/libraries/Hooks.sol";
+import { LPFeeLibrary } from "v4-core/libraries/LPFeeLibrary.sol";
 import { PoolId } from "v4-core/types/PoolId.sol";
 import { PoolKey } from "v4-core/types/PoolKey.sol";
 
@@ -68,8 +69,10 @@ contract SetupHook is Test {
   }
 
   function deployHook() public {
-    uint160 hookFlags =
-      uint160(Hooks.BEFORE_SWAP_FLAG | Hooks.BEFORE_ADD_LIQUIDITY_FLAG | Hooks.BEFORE_SWAP_RETURNS_DELTA_FLAG);
+    uint160 hookFlags = uint160(
+      Hooks.BEFORE_INITIALIZE_FLAG | Hooks.BEFORE_SWAP_FLAG | Hooks.BEFORE_ADD_LIQUIDITY_FLAG
+        | Hooks.BEFORE_SWAP_RETURNS_DELTA_FLAG
+    );
     vm.startPrank(owner);
     deployCodeTo("AsyncCSMM.sol", abi.encode(manager, owner), address(hookFlags));
     hook = AsyncCSMM(address(hookFlags));
@@ -92,7 +95,7 @@ contract SetupHook is Test {
     key = PoolKey({
       currency0: Currency.wrap(address(token0)),
       currency1: Currency.wrap(address(token1)),
-      fee: uint24(1000),
+      fee: LPFeeLibrary.DYNAMIC_FEE_FLAG,
       tickSpacing: int24(1),
       hooks: hook
     });
