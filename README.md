@@ -79,9 +79,9 @@ bun run dev
 
 > [!Tip]
 >
-> We use an indexer local to index hook events in [packages/indexer](./packages/indexer/)
+> We use an indexer local to index hook events in [./packages/indexer](./packages/indexer/)
 >
-> - If you typescript abi for your contract abis for your frontend use script to generate typescript file
+> - If you need typescript abi for your contracts on frontend or indexer use [script](./generateAbi.sh) generate typescript file
 >
 > ```sh
 > ./generateAbi.sh
