@@ -1,4 +1,4 @@
-# hook-starter
+# Async Swapp CSMM Hook
 
 Frontend + Indexer + Foundry monorepo for end-to-end development of Uniswap V4 hooks.
 
@@ -32,58 +32,47 @@ anvil
 anvil --block-time 1
 ```
 
-Deploy PoolManger
+## Async CSMM local deplyement
+
+Run start scripts
 
 ```sh
-forge script --broadcast --rpc-url localhost:8545 --account anvil -vvvv script/00_DeployPoolManager.s.sol
+./start_script.sh # scripts that you use --account setup of you choice
 ```
 
-Deploy Hook
+> [!NOTE]
+>
+> Start scripts do the following:
+>
+> 1. Deploy local PoolManger
+> 2. Deploy Hook & Router contracts
+> 3. Initialize a pool with your hook attached
+> 4. Add liqudity to previously initialized pool
 
-```sh
-forge script --broadcast --rpc-url localhost:8545 --account anvil -vvvv script/01_DeployHook.s.sol
-```
+## Offchain Indexer `packages/indexer`
 
-Initialize a pool with your hook attached
-
-```sh
-forge script --broadcast --rpc-url localhost:8545 --account anvil -vvvv script/02_InitilizePool.s.sol
-```
-
-Add liqudity to previously initialized pool
-
-```sh
-forge script --broadcast --rpc-url http:localhost:8545 --account anvil -vvvv script/03_AddLiquidity.s.sol
-```
-
-## Indexer `packages/indexer`
-
-Go to indexer
-
-```sh
-cd packages/indexer
-```
-
-Start local ponder indexer
+Start local indexer
 
 ```sh
 bun run dev
 ```
 
-Go to [http://localhost:42069](http://localhost:42069)
+> [!NOTE]
+>
+> You can also run indexer directly form its directory
+>
+> ```sh
+> cd packages/indexer && bun run dev
+> ```
 
-## Frontend `packages/frontend`
+Go to [http://localhost:42069](http://localhost:42069) to query orders and hook events
 
-Go to app
+## Frontend UI
 
-```sh
-cd packages/frontend
-```
+Front end repo lives here [repo](https://github.com/classcool/frontend) and [live demo](https://frontend-mu-one-27.vercel.app/dashboard)
 
-Start frontend
+![Transaction List UI](./transaction-ui.png)
 
-```sh
-bun run dev
-```
+![Filler UI - Async Swap](./filler-ui.png)
 
-Go to [http://localhost:3000](http://localhost:3000)
+Development frontend here
