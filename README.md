@@ -4,37 +4,40 @@ Frontend + Indexer + Foundry monorepo for end-to-end development of Uniswap V4 h
 
 ## Install
 
-To install dependencies
-
-> [!NOTE]
-> This will install dependencies from all our packages in `packages/*`
+To install dependencies in all our packages in `packages/*`
 
 ```bash
 bun install
 ```
 
+Install foundry dependencies (v4-periphery)
+
+```sh
+forge install
+```
+
 ## Setup
 
 > [!TIP]
-> Set up local anvil node, and create wallet from anvil accounts
->
-> - This allows us to use `--account anvil` in our deploys scripts
+> We suggest you set up local anvil account with cast.
 >
 > ```sh
 > cast wallet import --mnemonic "test test test test test test test test test test test junk" anvil
 > ```
+>
+> - This will allow you to use `--account anvil` in the deploys scripts in [`./start_script.sh`](./start_script.sh)
 
 Run local anvil node
 
 ```sh
 anvil
-# or to simulate block mining
-anvil --block-time 1
+# or simulate block mining and finality
+anvil --block-time 13
 ```
 
-## Async CSMM local deplyement
+## Local Deployment
 
-Run start scripts
+Run deployment script
 
 ```sh
 ./start_script.sh # scripts that you use --account setup of you choice
@@ -42,12 +45,22 @@ Run start scripts
 
 > [!NOTE]
 >
-> Start scripts do the following:
+> The start scripts will do the following:
 >
-> 1. Deploy local PoolManger
-> 2. Deploy Hook & Router contracts
-> 3. Initialize a pool with your hook attached
-> 4. Add liqudity to previously initialized pool
+> 1. Deploy local PoolManger [`./script/00_DeployPoolManager.s.sol`](./script/00_DeployPoolManager.s.sol)
+> 2. Deploy Hook & Router contracts [`./script/01_DeployHook.s.sol`](./script/01_DeployHook.s.sol)
+> 3. Initialize a pool with your hook attached [`./script/02_InitilizePool.s.sol`](./script/02_InitilizePool.s.sol)
+> 4. Add liqudity to previously initialized pool [`./script/03_AddLiquidity.s.sol`](./script/03_AddLiquidity.s.sol)
+> 5. Submit an async swap transaction through custom router [`./script/04_Swap.s.sol`](./script/04_Swap.s.sol)
+> 6. Fill previously submitted swap transaction [`./script/05_ExecuteOrder.s.sol`](./script/05_ExecuteOrder.s.sol)
+
+## Testing
+
+Run tests
+
+```sh
+forge test -vvvv
+```
 
 ## Offchain Indexer `packages/indexer`
 
@@ -57,22 +70,29 @@ Start local indexer
 bun run dev
 ```
 
-> [!NOTE]
+> [!Tip]
 >
-> You can also run indexer directly form its directory
->
-> ```sh
-> cd packages/indexer && bun run dev
-> ```
+> We use an indexer local to index hook events in [packages/indexer](./packages/indexer/)
 
 Go to [http://localhost:42069](http://localhost:42069) to query orders and hook events
 
 ## Frontend UI
 
-Front end repo lives here [repo](https://github.com/classcool/frontend) and [live demo](https://frontend-mu-one-27.vercel.app/dashboard)
+- Lives demo: [repo](https://github.com/classcool/frontend)
+- Frontend repo: [live demo](https://frontend-mu-one-27.vercel.app/dashboard)
 
-![Transaction List UI](./transaction-ui.png)
+> [!NOTE]
+>
+> - Async swap Transaction trable
+>   ![Transaction List UI](./transaction-ui.png)
+> - Async swap filler form
+>   ![Filler UI - Async Swap](./filler-ui.png)
 
-![Filler UI - Async Swap](./filler-ui.png)
+## Acknowledgment
 
-Development frontend here
+Thanks to [Atrium Academy](https://atrium.academy), over the past 2 months we build this project during Uniswap Hook incubator program.
+
+The Team Socials:
+
+- Meek [X](https://x.com/msakiart), [github](https://github.com/mmsaki)
+- Jiasun Li [X](https://x.com/mysteryfigure), [github](https://github.com/mysteryfigure)
