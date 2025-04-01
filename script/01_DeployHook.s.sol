@@ -7,7 +7,6 @@ import { FFIHelper } from "./FFIHelper.sol";
 import { console } from "forge-std/Test.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { Hooks } from "v4-core/libraries/Hooks.sol";
-import { PoolSwapTest } from "v4-core/test/PoolSwapTest.sol";
 import { HookMiner } from "v4-periphery/src/utils/HookMiner.sol";
 
 /// @notice Deploys Hook contract
@@ -19,7 +18,6 @@ contract DeployHookScript is FFIHelper {
 
   function setUp() public {
     manager = IPoolManager(_getDeployedPoolManager());
-    console.log(address(manager));
   }
 
   function run() public {

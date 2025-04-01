@@ -5,16 +5,11 @@ import { AsyncCSMM } from "../src/AsyncCSMM.sol";
 import { Router } from "../src/router.sol";
 import { FFIHelper } from "./FFIHelper.sol";
 import { console } from "forge-std/Test.sol";
-import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { IERC20Minimal } from "v4-core/interfaces/external/IERC20Minimal.sol";
-import { LPFeeLibrary } from "v4-core/libraries/LPFeeLibrary.sol";
-import { Currency, CurrencyLibrary } from "v4-core/types/Currency.sol";
-import { PoolIdLibrary, PoolKey } from "v4-core/types/PoolKey.sol";
+import { Currency } from "v4-core/types/Currency.sol";
+import { PoolKey } from "v4-core/types/PoolKey.sol";
 
 contract AddLiquidityScript is FFIHelper {
-
-  using CurrencyLibrary for Currency;
-  using PoolIdLibrary for PoolKey;
 
   AsyncCSMM hook;
   bytes32 poolId;
