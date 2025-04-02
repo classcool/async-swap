@@ -63,7 +63,7 @@ contract AsyncCsmmTest is SetupHook {
     uint256 balance1After = currency1.balanceOf(user);
 
     // user paid token0
-    assertEq(balance0Before - balance0After, 1e18);
+    assertEq(balance0Before - balance0After, amount);
 
     // user did not recieve token1 (AsyncSwap)
     assertEq(balance1Before, balance1After);
@@ -74,12 +74,16 @@ contract AsyncCsmmTest is SetupHook {
     // check executor
     assertEq(hook.setExecutor(user, asyncFiller), true);
 
-    // User 2 is a liquidity provider that will fill user 1's async order intent
-    vm.startPrank(user2);
-    token0.approve(address(hook), amount);
-    token1.approve(address(hook), amount);
-    router.addLiquidity(key, amount, amount);
+    balance0Before = currency0.balanceOf(user2);
+    balance1Before = currency1.balanceOf(user2);
 
+    vm.startPrank(user2);
+    // User 2 does not event need to add liquidity to fill user 1's async order
+    // token0.approve(address(hook), amount);
+    // token1.approve(address(hook), amount);
+    // router.addLiquidity(key, amount, amount);
+
+    // User 2 (LP) decides to fill user 1's order using router
     if (zeroForOne) {
       token1.approve(address(router), amount);
     } else {
@@ -88,6 +92,15 @@ contract AsyncCsmmTest is SetupHook {
     router.fillOrder(order, abi.encode(asyncFiller));
     vm.stopPrank();
 
+    balance0After = currency0.balanceOf(user2);
+    balance1After = currency1.balanceOf(user2);
+
+    // user 2 balance 0 remained the same
+    assertEq(balance0Before, balance0After);
+    // user 2 balance increased
+    assertEq(balance1Before - balance1After, amount);
+
+		// user can:
     assertEq(hook.asyncOrders(poolId, user, zeroForOne), 0);
     if (zeroForOne) {
       assertEq(manager.balanceOf(user, currency0.toId()), uint256(amount));
