@@ -74,7 +74,7 @@ contract AsyncCsmmTest is SetupHook {
     // check executor
     assertEq(hook.setExecutor(user, asyncFiller), true);
 
-    // Async executor after order
+    // User 2 is a liquidity provider that will fill user 1's async order intent
     vm.startPrank(user2);
     token0.approve(address(hook), amount);
     token1.approve(address(hook), amount);
