@@ -127,11 +127,9 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     /// @dev Take currencyFill from filler
     /// @dev Hook may charge filler a hook fee
     /// TODO: If fee emit HookFee event
-    uint256 finalTaken = calculateHookFee(amountToFill);
-    currencyFill.take(poolManager, address(this), amountToFill - finalTaken, true);
+    uint256 hookFee = calculateHookFee(amountToFill);
+    currencyFill.take(poolManager, address(this), amountToFill, true);
     currencyFill.settle(poolManager, msg.sender, amountToFill, false); // transfer
-    uint256 currClaimables = asyncOrders[poolId][order.owner][!order.zeroForOne];
-    asyncOrders[poolId][order.owner][!order.zeroForOne] = currClaimables + finalTaken;
   }
 
   /// @notice Creates async order that hook will fill in the future

@@ -100,7 +100,7 @@ contract AsyncCsmmTest is SetupHook {
     // user 2 balance increased
     assertEq(balance1Before - balance1After, amount);
 
-		// user can:
+    // user can: 
     assertEq(hook.asyncOrders(poolId, user, zeroForOne), 0);
     if (zeroForOne) {
       assertEq(manager.balanceOf(user, currency0.toId()), uint256(amount));
