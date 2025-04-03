@@ -83,7 +83,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     liq.key.currency1.settle(poolManager, liq.owner, liq.amount1, false); // transfer
 
     liq.key.currency0.take(poolManager, address(this), liq.amount0, true);
-    liq.key.currency1.take(poolManager, address(this), liq.amount0, true);
+    liq.key.currency1.take(poolManager, address(this), liq.amount1, true);
     emit HookModifyLiquidity(poolId, msg.sender, liq.amount0.toInt128(), liq.amount1.toInt128());
   }
 
