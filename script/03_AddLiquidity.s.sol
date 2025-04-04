@@ -28,12 +28,13 @@ contract AddLiquidityScript is FFIHelper {
   function run() public {
     vm.startBroadcast(OWNER);
 
-    uint256 amount = 100;
+    uint256 amount0 = 100;
+    uint256 amount1 = 100;
 
-    IERC20Minimal(Currency.unwrap(key.currency0)).approve(address(hook), amount);
-    IERC20Minimal(Currency.unwrap(key.currency1)).approve(address(hook), amount);
+    IERC20Minimal(Currency.unwrap(key.currency0)).approve(address(hook), amount0);
+    IERC20Minimal(Currency.unwrap(key.currency1)).approve(address(hook), amount1);
 
-    router.addLiquidity(key, amount, amount);
+    router.addLiquidity(key, amount0, amount1);
 
     vm.stopBroadcast();
   }
