@@ -12,23 +12,6 @@ wss.on("connection", (ws: WebSocket) => {
 
 ponder.on("CsmmHook:HookModifyLiquidity", async ({ event, context }) => {
 	await context.db
-		.insert(schema.liquidity)
-		.values({
-			id: event.transaction.hash,
-			poolId: event.args.id,
-			sender: event.args.sender,
-			amount0: event.args.amount0,
-			amount1: event.args.amount1,
-			chainId: context.network.chainId,
-			timestamp: event.block.timestamp,
-		})
-		.onConflictDoUpdate((row) => ({
-			amount0: row.amount0 + event.args.amount0,
-			amount1: row.amount1 + event.args.amount1,
-			timestamp: event.block.timestamp,
-		}));
-
-	await context.db
 		.insert(schema.user)
 		.values({
 			sender: event.transaction.from,

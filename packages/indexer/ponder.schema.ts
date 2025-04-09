@@ -89,8 +89,9 @@ export const liquidity = onchainTable(
 		id: t.hex().notNull(),
 		poolId: t.hex().notNull(),
 		sender: t.hex().notNull(),
-		amount0: t.bigint().notNull(),
-		amount1: t.bigint().notNull(),
+		liquidityDelta: t.bigint().notNull(),
+		tickLower: t.integer().notNull(),
+		tickUpper: t.integer().notNull(),
 		chainId: t.integer().notNull(),
 		timestamp: t
 			.bigint()
