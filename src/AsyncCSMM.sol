@@ -34,12 +34,10 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     uint128 hookLPfeeAmount0,
     uint128 hookLPfeeAmount1
   );
-  /// @dev Event emitted when a liquidity modification is executed.
-  event HookModifyLiquidity(bytes32 indexed id, address indexed sender, int128 amount0, int128 amount1);
 
   address asyncExecutor;
 
-  error AddLiquidityThroughHook();
+  error UnsupportedLiquidity();
 
   constructor(IPoolManager poolManager) BaseHook(poolManager) { }
 
@@ -73,18 +71,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     override
     returns (bytes4)
   {
-    revert AddLiquidityThroughHook();
-  }
-
-  /// @notice Allows adding liquidity through hook
-  function addLiquidity(IAsyncCSMM.CSMMLiquidityParams calldata liq) external {
-    bytes32 poolId = PoolId.unwrap(liq.key.toId());
-    liq.key.currency0.settle(poolManager, liq.owner, liq.amount0, false); // transfer
-    liq.key.currency1.settle(poolManager, liq.owner, liq.amount1, false); // transfer
-
-    liq.key.currency0.take(poolManager, address(this), liq.amount0, true);
-    liq.key.currency1.take(poolManager, address(this), liq.amount1, true);
-    emit HookModifyLiquidity(poolId, msg.sender, liq.amount0.toInt128(), liq.amount1.toInt128());
+    revert UnsupportedLiquidity();
   }
 
   /// @notice Check if user is executor address
@@ -127,7 +114,6 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     /// @dev Take currencyFill from filler
     /// @dev Hook may charge filler a hook fee
     /// TODO: If fee emit HookFee event
-    uint256 hookFee = calculateHookFee(amountToFill);
     currencyFill.take(poolManager, address(this), amountToFill, true);
     currencyFill.settle(poolManager, msg.sender, amountToFill, false); // transfer
   }

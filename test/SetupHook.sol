@@ -35,7 +35,6 @@ contract SetupHook is Test {
     createKey();
     intializePool();
     mint();
-    addLiquidity();
   }
 
   modifier ownerAction() {
@@ -46,13 +45,6 @@ contract SetupHook is Test {
 
   function deployRouter() public {
     router = new Router(manager, hook);
-  }
-
-  function addLiquidity() public ownerAction {
-    uint256 amount = 10 ether;
-    token0.approve(address(hook), amount);
-    token1.approve(address(hook), amount);
-    router.addLiquidity(key, amount, amount);
   }
 
   function mint() public ownerAction {

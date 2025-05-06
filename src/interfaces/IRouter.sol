@@ -7,7 +7,6 @@ import { IAsyncSwap } from "./IAsyncSwap.sol";
 interface IRouter {
 
   enum ActionType {
-    Liquidity,
     Swap,
     FillOrder
   }
@@ -17,10 +16,6 @@ interface IRouter {
     IAsyncSwap.AsyncOrder order;
   }
 
-  struct LiquidityCallback {
-    ActionType action;
-    IAsyncCSMM.CSMMLiquidityParams csmmLiq;
-  }
 
   function swap(IAsyncSwap.AsyncOrder calldata order, bytes calldata userData) external;
 
