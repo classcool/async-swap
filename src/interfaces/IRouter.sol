@@ -16,7 +16,6 @@ interface IRouter {
     IAsyncSwap.AsyncOrder order;
   }
 
-
   function swap(IAsyncSwap.AsyncOrder calldata order, bytes calldata userData) external;
 
   function fillOrder(IAsyncSwap.AsyncOrder calldata order, bytes calldata userData) external;

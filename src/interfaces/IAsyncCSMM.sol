@@ -6,7 +6,6 @@ import { PoolKey } from "v4-core/types/PoolKey.sol";
 
 interface IAsyncCSMM is IAsyncSwap {
 
-
   struct UserParams {
     address user;
     address executor;
