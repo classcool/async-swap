@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {IAsyncCSMM} from "./IAsyncCSMM.sol";
-import {IAsyncSwap} from "./IAsyncSwap.sol";
+import {IAsyncCSMM} from "@async-swap/interfaces/IAsyncCSMM.sol";
+import {IAsyncSwap} from "@async-swap/interfaces/IAsyncSwap.sol";
 
 /// @title Router Interface
 /// @author Async Labs
-/// @notice This interface defines the functions for the Router contract, which allows users to swap tokens and fill orders using async orders.
+/// @notice This interface defines the functions for the Router contract, which allows users to swap tokens and fill
+/// orders using async orders.
 interface IRouter {
     /// Enum representing the action type for the swap callback.
     /// 1. Swap - If the action is a swap, this will specify the async swap order intent.

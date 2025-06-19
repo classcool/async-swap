@@ -13,6 +13,9 @@ import {Currency} from "v4-core/types/Currency.sol";
 import {PoolId} from "v4-core/types/PoolId.sol";
 import {PoolIdLibrary, PoolKey} from "v4-core/types/PoolKey.sol";
 import {BaseHook} from "v4-periphery/src/utils/BaseHook.sol";
+import {IAsyncCSMM, IAsyncSwap} from "@async-swap/interfaces/IAsyncCSMM.sol";
+import {IRouter} from "@async-swap/interfaces/IRouter.sol";
+import {AsyncOrder} from "@async-swap/types/AsyncOrder.sol";
 
 /// @title Async CSMM
 /// @notice A NoOp Hook that has custom accounting minting 1:1 assets

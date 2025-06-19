@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import {IAsyncCSMM} from "./interfaces/IAsyncCSMM.sol";
-import {IAsyncSwap} from "./interfaces/IAsyncSwap.sol";
-import {IRouter} from "./interfaces/IRouter.sol";
+import {IAsyncCSMM} from "@async-swap/interfaces/IAsyncCSMM.sol";
+import {IAsyncSwap} from "@async-swap/interfaces/IAsyncSwap.sol";
+import {IRouter} from "@async-swap/interfaces/IRouter.sol";
 import {CurrencySettler} from "@uniswap/v4-core/test/utils/CurrencySettler.sol";
 import {console} from "forge-std/Test.sol";
 import {IPoolManager} from "v4-core/interfaces/IPoolManager.sol";
@@ -14,7 +14,8 @@ import {PoolKey} from "v4-core/types/PoolKey.sol";
 
 /// @title Router Contract
 /// @author Async Labs
-/// @notice This contract implements the Router interface, allowing users to swap tokens and fill async orders through the PoolManager and Async Swap hook.
+/// @notice This contract implements the Router interface, allowing users to swap tokens and fill async orders through
+/// the PoolManager and Async Swap hook.
 contract Router is IRouter {
     using CurrencySettler for Currency;
     using CurrencyLibrary for Currency;

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {IAsyncSwap} from "./IAsyncSwap.sol";
+import {IAsyncSwap} from "@async-swap/interfaces/IAsyncSwap.sol";
 import {PoolKey} from "v4-core/types/PoolKey.sol";
 
 /// @title Async CSMM Interface
@@ -20,7 +20,15 @@ interface IAsyncCSMM is IAsyncSwap {
     /// @param order The async order to be filled.
     /// @param userParams Additional data for the user.
     function executeOrder(
-        IAsyncSwap.AsyncOrder calldata order,
+        AsyncOrder calldata order,
+        bytes calldata userParams
+    ) external;
+
+    /// Fills async orders in batching mode, allowing multiple orders to be executed in a single transaction.
+    /// @param orders An array of async orders to be executed.
+    /// @param userParams Additional data for the user, allowing user to specify an executor.
+    function executeOrders(
+        AsyncOrder[] calldata orders,
         bytes calldata userParams
     ) external;
 }
