@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.26;
 
-import {IAsyncCSMM, IAsyncSwap} from "./interfaces/IAsyncCSMM.sol";
-import {IRouter} from "./interfaces/IRouter.sol";
 import {CurrencySettler} from "@uniswap/v4-core/test/utils/CurrencySettler.sol";
 import {IPoolManager} from "v4-core/interfaces/IPoolManager.sol";
 import {Hooks} from "v4-core/libraries/Hooks.sol";
@@ -13,6 +11,8 @@ import {Currency} from "v4-core/types/Currency.sol";
 import {PoolId} from "v4-core/types/PoolId.sol";
 import {PoolIdLibrary, PoolKey} from "v4-core/types/PoolKey.sol";
 import {BaseHook} from "v4-periphery/src/utils/BaseHook.sol";
+import {IAlgorithm} from "@async-swap/interfaces/IAlgorithm.sol";
+import {Algorithm2} from "@async-swap/aglorithms/algorithm-2.sol";
 import {IAsyncCSMM, IAsyncSwap} from "@async-swap/interfaces/IAsyncCSMM.sol";
 import {IRouter} from "@async-swap/interfaces/IRouter.sol";
 import {AsyncOrder} from "@async-swap/types/AsyncOrder.sol";
@@ -24,6 +24,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     using CurrencySettler for Currency;
     using PoolIdLibrary for PoolKey;
 
+    IAlgorithm public algorithm;
     mapping(PoolId poolId => mapping(address user => mapping(bool zeroForOne => uint256 claimable)))
         public asyncOrders;
     mapping(address owner => mapping(address executor => bool))
@@ -45,13 +46,12 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
         uint128 hookLPfeeAmount1
     );
 
-    /// @dev Address of the async executor
-    address asyncExecutor;
-
     /// @notice Error thrown when liquidity is not supported in this hook.
     error UnsupportedLiquidity();
 
-    constructor(IPoolManager poolManager) BaseHook(poolManager) {}
+    constructor(IPoolManager poolManager) BaseHook(poolManager) {
+        algorithm = new Algorithm2(address(this));
+    }
 
     /// @inheritdoc BaseHook
     function _beforeInitialize(
@@ -104,10 +104,10 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
 
     /// @inheritdoc IAsyncSwap
     function isExecutor(
-        AsyncOrder calldata order,
+        address owner,
         address executor
     ) public view returns (bool) {
-        return setExecutor[order.owner][executor];
+        return setExecutor[owner][executor];
     }
 
     function calculateHookFee(uint256) public pure returns (uint256) {
@@ -118,37 +118,48 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
         return 0;
     }
 
+    function executeOrders(
+        AsyncOrder[] calldata orders,
+        bytes calldata userParams
+    ) external {
+        for (uint8 i = 0; i < orders.length; i++) {
+            AsyncOrder calldata order = orders[i];
+            // Use transaction ordering algorithm to ensure correct execution order
+            algorithm.orderingRule(order.zeroForOne, uint256(order.amountIn));
+            this.executeOrder(order, userParams);
+        }
+    }
+
     /// @inheritdoc IAsyncCSMM
     function executeOrder(AsyncOrder calldata order, bytes calldata) external {
-        if (order.amountIn == 0) revert ZeroFillOrder();
-
+        address owner = order.owner;
+        uint256 amountIn = order.amountIn;
+        bool zeroForOne = order.zeroForOne;
+        Currency currency0 = order.key.currency0;
+        Currency currency1 = order.key.currency1;
         PoolId poolId = order.key.toId();
-        uint256 amountToFill = uint256(order.amountIn);
-        uint256 claimableAmount = asyncOrders[poolId][order.owner][
-            order.zeroForOne
-        ];
+
+        if (amountIn == 0) revert ZeroFillOrder();
+
+        uint256 amountToFill = uint256(amountIn);
+        uint256 claimableAmount = asyncOrders[poolId][owner][zeroForOne];
         require(amountToFill <= claimableAmount, "Max fill order limit exceed");
-        require(isExecutor(order, msg.sender), "Caller is valid not excutor");
+        require(isExecutor(owner, msg.sender), "Caller is valid not excutor");
 
         /// @dev Transfer currency of async order to user
         Currency currencyTake;
         Currency currencyFill;
         if (order.zeroForOne) {
-            currencyTake = order.key.currency0;
-            currencyFill = order.key.currency1;
+            currencyTake = currency0;
+            currencyFill = currency1;
         } else {
-            currencyTake = order.key.currency1;
-            currencyFill = order.key.currency0;
+            currencyTake = currency1;
+            currencyFill = currency0;
         }
 
-        asyncOrders[poolId][order.owner][order.zeroForOne] -= amountToFill;
-        poolManager.transfer(order.owner, currencyTake.toId(), amountToFill);
-        emit AsyncOrderFilled(
-            poolId,
-            order.owner,
-            order.zeroForOne,
-            amountToFill
-        );
+        asyncOrders[poolId][owner][zeroForOne] -= amountToFill;
+        poolManager.transfer(owner, currencyTake.toId(), amountToFill);
+        emit AsyncOrderFilled(poolId, owner, zeroForOne, amountToFill);
 
         /// @dev Take currencyFill from filler
         /// @dev Hook may charge filler a hook fee
