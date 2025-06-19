@@ -1,41 +1,43 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import { SetupHook } from "./SetupHook.sol";
+import { Algorithm2, IAlgorithm } from "@async-swap/aglorithms/algorithm-2.sol";
 import "forge-std/Test.sol";
-import {Algorithm2, IAlgorithm} from "@async-swap/aglorithms/algorithm-2.sol";
-import {SetupHook} from "./SetupHook.sol";
 
 contract Algorithm2Test is SetupHook {
-    IAlgorithm algorithm;
 
-    function setUp() public override {
-        super.setUp();
-        algorithm = hook.algorithm();
-    }
+  IAlgorithm algorithm;
 
-    function testExecuteOrderBuy() public {
-        // Test setup for a buy order
-        bool zeroForOne = true;
-        uint256 amount = 1000;
+  function setUp() public override {
+    super.setUp();
+    algorithm = hook.algorithm();
+  }
 
-        // Execute the order
-        vm.prank(address(hook));
-        algorithm.orderingRule(zeroForOne, amount);
+  function testExecuteOrderBuy() public {
+    // Test setup for a buy order
+    bool zeroForOne = true;
+    uint256 amount = 1000;
 
-        // Add assertions to verify the expected state changes
-        // Example: assertEq(expected, actual, "Error message");
-    }
+    // Execute the order
+    vm.prank(address(hook));
+    algorithm.orderingRule(zeroForOne, amount);
 
-    function testExecuteOrderSell() public {
-        // Test setup for a sell order
-        bool zeroForOne = false;
-        uint256 amount = 1000;
+    // Add assertions to verify the expected state changes
+    // Example: assertEq(expected, actual, "Error message");
+  }
 
-        // Execute the order
-        vm.prank(address(hook));
-        algorithm.orderingRule(zeroForOne, amount);
+  function testExecuteOrderSell() public {
+    // Test setup for a sell order
+    bool zeroForOne = false;
+    uint256 amount = 1000;
 
-        // Add assertions to verify the expected state changes
-        // Example: assertEq(expected, actual, "Error message");
-    }
+    // Execute the order
+    vm.prank(address(hook));
+    algorithm.orderingRule(zeroForOne, amount);
+
+    // Add assertions to verify the expected state changes
+    // Example: assertEq(expected, actual, "Error message");
+  }
+
 }

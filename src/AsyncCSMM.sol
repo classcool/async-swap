@@ -1,242 +1,197 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.26;
 
-import {CurrencySettler} from "@uniswap/v4-core/test/utils/CurrencySettler.sol";
-import {IPoolManager} from "v4-core/interfaces/IPoolManager.sol";
-import {Hooks} from "v4-core/libraries/Hooks.sol";
-import {LPFeeLibrary} from "v4-core/libraries/LPFeeLibrary.sol";
-import {SafeCast} from "v4-core/libraries/SafeCast.sol";
-import {BeforeSwapDelta, BeforeSwapDeltaLibrary, toBeforeSwapDelta} from "v4-core/types/BeforeSwapDelta.sol";
-import {Currency} from "v4-core/types/Currency.sol";
-import {PoolId} from "v4-core/types/PoolId.sol";
-import {PoolIdLibrary, PoolKey} from "v4-core/types/PoolKey.sol";
-import {BaseHook} from "v4-periphery/src/utils/BaseHook.sol";
-import {IAlgorithm} from "@async-swap/interfaces/IAlgorithm.sol";
-import {Algorithm2} from "@async-swap/aglorithms/algorithm-2.sol";
-import {IAsyncCSMM, IAsyncSwap} from "@async-swap/interfaces/IAsyncCSMM.sol";
-import {IRouter} from "@async-swap/interfaces/IRouter.sol";
-import {AsyncOrder} from "@async-swap/types/AsyncOrder.sol";
+import { Algorithm2 } from "@async-swap/aglorithms/algorithm-2.sol";
+import { IAlgorithm } from "@async-swap/interfaces/IAlgorithm.sol";
+import { IAsyncCSMM, IAsyncSwap } from "@async-swap/interfaces/IAsyncCSMM.sol";
+import { IRouter } from "@async-swap/interfaces/IRouter.sol";
+import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
+import { CurrencySettler } from "@uniswap/v4-core/test/utils/CurrencySettler.sol";
+import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
+import { Hooks } from "v4-core/libraries/Hooks.sol";
+import { LPFeeLibrary } from "v4-core/libraries/LPFeeLibrary.sol";
+import { SafeCast } from "v4-core/libraries/SafeCast.sol";
+import { BeforeSwapDelta, BeforeSwapDeltaLibrary, toBeforeSwapDelta } from "v4-core/types/BeforeSwapDelta.sol";
+import { Currency } from "v4-core/types/Currency.sol";
+import { PoolId } from "v4-core/types/PoolId.sol";
+import { PoolIdLibrary, PoolKey } from "v4-core/types/PoolKey.sol";
+import { BaseHook } from "v4-periphery/src/utils/BaseHook.sol";
 
 /// @title Async CSMM
 /// @notice A NoOp Hook that has custom accounting minting 1:1 assets
 contract AsyncCSMM is BaseHook, IAsyncCSMM {
-    using SafeCast for *;
-    using CurrencySettler for Currency;
-    using PoolIdLibrary for PoolKey;
 
-    IAlgorithm public algorithm;
-    mapping(PoolId poolId => mapping(address user => mapping(bool zeroForOne => uint256 claimable)))
-        public asyncOrders;
-    mapping(address owner => mapping(address executor => bool))
-        public setExecutor;
+  using SafeCast for *;
+  using CurrencySettler for Currency;
+  using PoolIdLibrary for PoolKey;
 
-    /// Event emitted when a swap is executed.
-    /// @param id The poolId of the pool where the swap occurred.
-    /// @param sender The address that initiated the swap.
-    /// @param amount0 The amount of currency0 taken in the swap (negative for exact input).
-    /// @param amount1 The amount of currency1 taken in the swap (negative for exact input).
-    /// @param hookLPfeeAmount0 Fee amount taken for LP in currency0.
-    /// @param hookLPfeeAmount1 Fee amount taken for LP in currency1.
-    event HookSwap(
-        bytes32 indexed id,
-        address indexed sender,
-        int128 amount0,
-        int128 amount1,
-        uint128 hookLPfeeAmount0,
-        uint128 hookLPfeeAmount1
-    );
+  IAlgorithm public algorithm;
+  mapping(PoolId poolId => mapping(address user => mapping(bool zeroForOne => uint256 claimable))) public asyncOrders;
+  mapping(address owner => mapping(address executor => bool)) public setExecutor;
 
-    /// @notice Error thrown when liquidity is not supported in this hook.
-    error UnsupportedLiquidity();
+  /// Event emitted when a swap is executed.
+  /// @param id The poolId of the pool where the swap occurred.
+  /// @param sender The address that initiated the swap.
+  /// @param amount0 The amount of currency0 taken in the swap (negative for exact input).
+  /// @param amount1 The amount of currency1 taken in the swap (negative for exact input).
+  /// @param hookLPfeeAmount0 Fee amount taken for LP in currency0.
+  /// @param hookLPfeeAmount1 Fee amount taken for LP in currency1.
+  event HookSwap(
+    bytes32 indexed id,
+    address indexed sender,
+    int128 amount0,
+    int128 amount1,
+    uint128 hookLPfeeAmount0,
+    uint128 hookLPfeeAmount1
+  );
 
-    constructor(IPoolManager poolManager) BaseHook(poolManager) {
-        algorithm = new Algorithm2(address(this));
+  /// @notice Error thrown when liquidity is not supported in this hook.
+  error UnsupportedLiquidity();
+
+  constructor(IPoolManager poolManager) BaseHook(poolManager) {
+    algorithm = new Algorithm2(address(this));
+  }
+
+  /// @inheritdoc BaseHook
+  function _beforeInitialize(address, PoolKey calldata key, uint160) internal virtual override returns (bytes4) {
+    require(key.fee == LPFeeLibrary.DYNAMIC_FEE_FLAG, "Dude use dynamic fees flag");
+    return this.beforeInitialize.selector;
+  }
+
+  /// @inheritdoc BaseHook
+  function getHookPermissions() public pure override returns (Hooks.Permissions memory) {
+    return Hooks.Permissions({
+      beforeInitialize: true,
+      afterInitialize: false,
+      beforeAddLiquidity: true, // override liquidity functionality
+      afterAddLiquidity: false,
+      beforeRemoveLiquidity: false,
+      afterRemoveLiquidity: false,
+      beforeSwap: true, // override how swaps are done async swap
+      afterSwap: false,
+      beforeDonate: false,
+      afterDonate: false,
+      beforeSwapReturnDelta: true, // allow beforeSwap to return a custom delta, for custom ordering
+      afterSwapReturnDelta: false,
+      afterAddLiquidityReturnDelta: false,
+      afterRemoveLiquidityReturnDelta: false
+    });
+  }
+
+  /// @inheritdoc BaseHook
+  function _beforeAddLiquidity(address, PoolKey calldata, IPoolManager.ModifyLiquidityParams calldata, bytes calldata)
+    internal
+    pure
+    override
+    returns (bytes4)
+  {
+    revert UnsupportedLiquidity();
+  }
+
+  /// @inheritdoc IAsyncSwap
+  function isExecutor(address owner, address executor) public view returns (bool) {
+    return setExecutor[owner][executor];
+  }
+
+  function calculateHookFee(uint256) public pure returns (uint256) {
+    return 0;
+  }
+
+  function calculatePoolFee(uint24, uint256) public pure returns (uint256) {
+    return 0;
+  }
+
+  function executeOrders(AsyncOrder[] calldata orders, bytes calldata userParams) external {
+    for (uint8 i = 0; i < orders.length; i++) {
+      AsyncOrder calldata order = orders[i];
+      // Use transaction ordering algorithm to ensure correct execution order
+      algorithm.orderingRule(order.zeroForOne, uint256(order.amountIn));
+      this.executeOrder(order, userParams);
+    }
+  }
+
+  /// @inheritdoc IAsyncCSMM
+  function executeOrder(AsyncOrder calldata order, bytes calldata) external {
+    address owner = order.owner;
+    uint256 amountIn = order.amountIn;
+    bool zeroForOne = order.zeroForOne;
+    Currency currency0 = order.key.currency0;
+    Currency currency1 = order.key.currency1;
+    PoolId poolId = order.key.toId();
+
+    if (amountIn == 0) revert ZeroFillOrder();
+
+    uint256 amountToFill = uint256(amountIn);
+    uint256 claimableAmount = asyncOrders[poolId][owner][zeroForOne];
+    require(amountToFill <= claimableAmount, "Max fill order limit exceed");
+    require(isExecutor(owner, msg.sender), "Caller is valid not excutor");
+
+    /// @dev Transfer currency of async order to user
+    Currency currencyTake;
+    Currency currencyFill;
+    if (order.zeroForOne) {
+      currencyTake = currency0;
+      currencyFill = currency1;
+    } else {
+      currencyTake = currency1;
+      currencyFill = currency0;
     }
 
-    /// @inheritdoc BaseHook
-    function _beforeInitialize(
-        address,
-        PoolKey calldata key,
-        uint160
-    ) internal virtual override returns (bytes4) {
-        require(
-            key.fee == LPFeeLibrary.DYNAMIC_FEE_FLAG,
-            "Dude use dynamic fees flag"
-        );
-        return this.beforeInitialize.selector;
+    asyncOrders[poolId][owner][zeroForOne] -= amountToFill;
+    poolManager.transfer(owner, currencyTake.toId(), amountToFill);
+    emit AsyncOrderFilled(poolId, owner, zeroForOne, amountToFill);
+
+    /// @dev Take currencyFill from filler
+    /// @dev Hook may charge filler a hook fee
+    /// TODO: If fee emit HookFee event
+    currencyFill.take(poolManager, address(this), amountToFill, true);
+    currencyFill.settle(poolManager, msg.sender, amountToFill, false); // transfer
+  }
+
+  /// @inheritdoc BaseHook
+  function _beforeSwap(
+    address sender,
+    PoolKey calldata key,
+    IPoolManager.SwapParams calldata params,
+    bytes calldata hookParams
+  ) internal override returns (bytes4, BeforeSwapDelta, uint24) {
+    /// @dev Async swaps only work for exact-input swaps
+    if (params.amountSpecified > 0) {
+      revert("Hook only support ExectInput Amount");
     }
 
-    /// @inheritdoc BaseHook
-    function getHookPermissions()
-        public
-        pure
-        override
-        returns (Hooks.Permissions memory)
-    {
-        return
-            Hooks.Permissions({
-                beforeInitialize: true,
-                afterInitialize: false,
-                beforeAddLiquidity: true, // override liquidity functionality
-                afterAddLiquidity: false,
-                beforeRemoveLiquidity: false,
-                afterRemoveLiquidity: false,
-                beforeSwap: true, // override how swaps are done async swap
-                afterSwap: false,
-                beforeDonate: false,
-                afterDonate: false,
-                beforeSwapReturnDelta: true, // allow beforeSwap to return a custom delta, for custom ordering
-                afterSwapReturnDelta: false,
-                afterAddLiquidityReturnDelta: false,
-                afterRemoveLiquidityReturnDelta: false
-            });
+    PoolId poolId = key.toId();
+    uint256 amountTaken = uint256(-params.amountSpecified);
+    UserParams memory hookData = abi.decode(hookParams, (UserParams));
+
+    /// @dev Specify the input token
+    Currency specified = params.zeroForOne ? key.currency0 : key.currency1;
+
+    /// @dev create hook debt
+    specified.take(poolManager, address(this), amountTaken, true);
+    /// @dev Take pool fee for LP
+    uint256 feeAmount = calculatePoolFee(key.fee, amountTaken);
+    uint256 finalTaken = amountTaken - feeAmount;
+    setExecutor[hookData.user][hookData.executor] = true;
+    emit AsyncSwapOrder(poolId, hookData.user, params.zeroForOne, finalTaken.toInt256());
+
+    /// @dev Issue 1:1 claimableAmount - pool fee to user
+    /// @dev Add amount taken to previous claimableAmount
+    uint256 currClaimables = asyncOrders[poolId][hookData.user][params.zeroForOne];
+    asyncOrders[poolId][hookData.user][params.zeroForOne] = currClaimables + finalTaken;
+
+    /// @dev Hook event
+    /// @reference
+    /// https://github.com/OpenZeppelin/uniswap-hooks/blob/19fa03bdacd780a3e44f7c3707d6881e364d9596/src/base/BaseAsyncSwap.sol#L75
+    if (specified == key.currency0) {
+      emit HookSwap(PoolId.unwrap(poolId), sender, amountTaken.toInt128(), 0, feeAmount.toUint128(), 0);
+    } else {
+      emit HookSwap(PoolId.unwrap(poolId), sender, 0, amountTaken.toInt128(), 0, feeAmount.toUint128());
     }
 
-    /// @inheritdoc BaseHook
-    function _beforeAddLiquidity(
-        address,
-        PoolKey calldata,
-        IPoolManager.ModifyLiquidityParams calldata,
-        bytes calldata
-    ) internal pure override returns (bytes4) {
-        revert UnsupportedLiquidity();
-    }
+    BeforeSwapDelta beforeSwapDelta = toBeforeSwapDelta(int128(-params.amountSpecified), 0);
+    /// @dev return execution to PoolManager
+    return (BaseHook.beforeSwap.selector, beforeSwapDelta, 0);
+  }
 
-    /// @inheritdoc IAsyncSwap
-    function isExecutor(
-        address owner,
-        address executor
-    ) public view returns (bool) {
-        return setExecutor[owner][executor];
-    }
-
-    function calculateHookFee(uint256) public pure returns (uint256) {
-        return 0;
-    }
-
-    function calculatePoolFee(uint24, uint256) public pure returns (uint256) {
-        return 0;
-    }
-
-    function executeOrders(
-        AsyncOrder[] calldata orders,
-        bytes calldata userParams
-    ) external {
-        for (uint8 i = 0; i < orders.length; i++) {
-            AsyncOrder calldata order = orders[i];
-            // Use transaction ordering algorithm to ensure correct execution order
-            algorithm.orderingRule(order.zeroForOne, uint256(order.amountIn));
-            this.executeOrder(order, userParams);
-        }
-    }
-
-    /// @inheritdoc IAsyncCSMM
-    function executeOrder(AsyncOrder calldata order, bytes calldata) external {
-        address owner = order.owner;
-        uint256 amountIn = order.amountIn;
-        bool zeroForOne = order.zeroForOne;
-        Currency currency0 = order.key.currency0;
-        Currency currency1 = order.key.currency1;
-        PoolId poolId = order.key.toId();
-
-        if (amountIn == 0) revert ZeroFillOrder();
-
-        uint256 amountToFill = uint256(amountIn);
-        uint256 claimableAmount = asyncOrders[poolId][owner][zeroForOne];
-        require(amountToFill <= claimableAmount, "Max fill order limit exceed");
-        require(isExecutor(owner, msg.sender), "Caller is valid not excutor");
-
-        /// @dev Transfer currency of async order to user
-        Currency currencyTake;
-        Currency currencyFill;
-        if (order.zeroForOne) {
-            currencyTake = currency0;
-            currencyFill = currency1;
-        } else {
-            currencyTake = currency1;
-            currencyFill = currency0;
-        }
-
-        asyncOrders[poolId][owner][zeroForOne] -= amountToFill;
-        poolManager.transfer(owner, currencyTake.toId(), amountToFill);
-        emit AsyncOrderFilled(poolId, owner, zeroForOne, amountToFill);
-
-        /// @dev Take currencyFill from filler
-        /// @dev Hook may charge filler a hook fee
-        /// TODO: If fee emit HookFee event
-        currencyFill.take(poolManager, address(this), amountToFill, true);
-        currencyFill.settle(poolManager, msg.sender, amountToFill, false); // transfer
-    }
-
-    /// @inheritdoc BaseHook
-    function _beforeSwap(
-        address sender,
-        PoolKey calldata key,
-        IPoolManager.SwapParams calldata params,
-        bytes calldata hookParams
-    ) internal override returns (bytes4, BeforeSwapDelta, uint24) {
-        /// @dev Async swaps only work for exact-input swaps
-        if (params.amountSpecified > 0) {
-            revert("Hook only support ExectInput Amount");
-        }
-
-        PoolId poolId = key.toId();
-        uint256 amountTaken = uint256(-params.amountSpecified);
-        UserParams memory hookData = abi.decode(hookParams, (UserParams));
-
-        /// @dev Specify the input token
-        Currency specified = params.zeroForOne ? key.currency0 : key.currency1;
-
-        /// @dev create hook debt
-        specified.take(poolManager, address(this), amountTaken, true);
-        /// @dev Take pool fee for LP
-        uint256 feeAmount = calculatePoolFee(key.fee, amountTaken);
-        uint256 finalTaken = amountTaken - feeAmount;
-        setExecutor[hookData.user][hookData.executor] = true;
-        emit AsyncSwapOrder(
-            poolId,
-            hookData.user,
-            params.zeroForOne,
-            finalTaken.toInt256()
-        );
-
-        /// @dev Issue 1:1 claimableAmount - pool fee to user
-        /// @dev Add amount taken to previous claimableAmount
-        uint256 currClaimables = asyncOrders[poolId][hookData.user][
-            params.zeroForOne
-        ];
-        asyncOrders[poolId][hookData.user][params.zeroForOne] =
-            currClaimables +
-            finalTaken;
-
-        /// @dev Hook event
-        /// @reference
-        /// https://github.com/OpenZeppelin/uniswap-hooks/blob/19fa03bdacd780a3e44f7c3707d6881e364d9596/src/base/BaseAsyncSwap.sol#L75
-        if (specified == key.currency0) {
-            emit HookSwap(
-                PoolId.unwrap(poolId),
-                sender,
-                amountTaken.toInt128(),
-                0,
-                feeAmount.toUint128(),
-                0
-            );
-        } else {
-            emit HookSwap(
-                PoolId.unwrap(poolId),
-                sender,
-                0,
-                amountTaken.toInt128(),
-                0,
-                feeAmount.toUint128()
-            );
-        }
-
-        BeforeSwapDelta beforeSwapDelta = toBeforeSwapDelta(
-            int128(-params.amountSpecified),
-            0
-        );
-        /// @dev return execution to PoolManager
-        return (BaseHook.beforeSwap.selector, beforeSwapDelta, 0);
-    }
 }
