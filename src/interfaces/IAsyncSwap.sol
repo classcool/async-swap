@@ -1,28 +1,74 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import { Currency } from "v4-core/types/Currency.sol";
-import { PoolId } from "v4-core/types/PoolId.sol";
-import { PoolKey } from "v4-core/types/PoolKey.sol";
+import {Currency} from "v4-core/types/Currency.sol";
+import {PoolId} from "v4-core/types/PoolId.sol";
+import {PoolKey} from "v4-core/types/PoolKey.sol";
 
+/// @title Async Swap Interface
+/// @author Async Labs
+/// @notice This interface defines the functions for the Async Swap orders.
 interface IAsyncSwap {
+    /// @notice Emitted when an async order is filled.
+    /// @param poolId The poolId of the pool where the order is placed.
+    /// @param owner The owner of the order, who can claim the order.
+    /// @param zeroForOne Whether the order is for a swap from currency0 to currency1 (true) or currency1 to currency0 (false).
+    /// @param amount The amount of the order.
+    event AsyncOrderFilled(
+        PoolId poolId,
+        address owner,
+        bool zeroForOne,
+        uint256 amount
+    );
 
-  event AsyncOrderFilled(PoolId poolId, address owner, bool zeroForOne, uint256 amount);
-  event AsyncSwapOrder(PoolId poolId, address owner, bool indexed zeroForOne, int256 indexed amountIn);
+    /// @notice Emitted when an async swap order is created.
+    /// @param poolId The poolId of the pool where the order is placed.
+    /// @param owner The owner of the order, who can claim the order.
+    /// @param zeroForOne Whether the order is for a swap from currency0 to currency1 (true) or currency1 to currency0 (false).
+    /// @param amountIn The amount of the order that is being filled.
+    event AsyncSwapOrder(
+        PoolId poolId,
+        address owner,
+        bool indexed zeroForOne,
+        int256 indexed amountIn
+    );
 
-  struct AsyncOrder {
-    PoolKey key;
-    address owner;
-    bool zeroForOne;
-    uint256 amountIn;
-    uint160 sqrtPrice;
-  }
+    /// @notice Represents an async order for a swap in the Uniswap V4 pool.
+    /// @param key The Uniswap V4 PoolKey that identifies the pool.
+    /// @param owner The owner of the order, who can claim the order.
+    /// @param zeroForOne Whether the order is for a swap from currency0 to currency1 (true) or currency1 to currency0 (false).
+    /// @param amountIn The amount of the order that is being filled.
+    /// @param sqrtPrice The square root price of the pool at the time of the order.
+    struct AsyncOrder {
+        PoolKey key;
+        address owner;
+        bool zeroForOne;
+        uint256 amountIn;
+        uint160 sqrtPrice;
+    }
 
-  error InvalidOrder();
-  error ZeroFillOrder();
+    /// @notice Error thrown when an order is invalid.
+    error InvalidOrder();
+    /// @notice Error thrown when an order is of zero amount.
+    error ZeroFillOrder();
 
-  function asyncOrders(PoolId poolId, address user, bool zeroForOne) external view returns (uint256 claimable);
-  function executeOrder(AsyncOrder memory order, bytes calldata userData) external;
-  function isExecutor(AsyncOrder calldata order, address executor) external returns (bool);
+    /// @notice Returns the claimable amount for an async order.
+    /// @param poolId The poolId of the pool where the order is placed.
+    /// @param user The user who placed the order.
+    /// @param zeroForOne Whether the order is for a swap from currency0 to currency1 (true) or currency1 to currency0 (false).
+    /// @return claimable The amount that can be claimed by the user.
+    function asyncOrders(
+        PoolId poolId,
+        address user,
+        bool zeroForOne
+    ) external view returns (uint256 claimable);
 
+    /// @notice Checks if the given executor is valid for the async order.
+    /// @param order The async order to be checked.
+    /// @param executor The address of the executor to be checked.
+    /// @return isExecutor True if the executor is valid for the async order, false otherwise.
+    function isExecutor(
+        AsyncOrder calldata order,
+        address executor
+    ) external returns (bool);
 }
