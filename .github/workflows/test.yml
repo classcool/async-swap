@@ -5,6 +5,15 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 env:
   FOUNDRY_PROFILE: ci
 
@@ -41,3 +50,16 @@ jobs:
         run: |
           forge test -vvv
         id: test
+
+      - name: Generate and patch docs
+        run: |
+          bash build-docs.sh
+
+      - name: Deploy to GitHub Pages
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_build/${{ env.BRANCH_NAME }}/book
+          publish_branch: gh-pages
