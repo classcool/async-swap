@@ -17,7 +17,7 @@ interface IAsyncSwapAMM is IAsyncSwapOrder {
     address executor;
   }
 
-  /// @notice Creates an async order that can be filled later.
+  /// @notice Fill an async order in an Async Swap AMM.
   /// @param order The async order to be filled.
   /// @param userParams Additional data for the user.
   function executeOrder(AsyncOrder calldata order, bytes calldata userParams) external;
