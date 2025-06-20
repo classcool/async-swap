@@ -42,25 +42,8 @@ jobs:
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          BRANCH_NAME=${GITHUB_REF#refs/heads/}
-          SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | tr '/' '-')
-
-          git clone --depth=1 --branch gh-pages https://github.com/${{ github.repository }} gh-pages || \
-          git clone --depth=1 https://github.com/${{ github.repository }} gh-pages && \
-          cd gh-pages && \
-          git checkout --orphan gh-pages
-
-          cd gh-pages
-
-          rm -rf "$SAFE_BRANCH_NAME"
-          mkdir -p "$SAFE_BRANCH_NAME"
-
-          cp -r ../docs/book/* "$SAFE_BRANCH_NAME/"
-
-          git add "$SAFE_BRANCH_NAME"
-          git commit -m "Update docs for branch $BRANCH_NAME" || echo "No changes to commit"
-          git push origin gh-pages
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/book
+          publish_branch: gh-pages
+          force_orphan: true
