@@ -3,6 +3,8 @@ pragma solidity ^0.8.26;
 
 import { BaseAlgorithm } from "./BaseAlgorithm.sol";
 import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
+import { TransientStorage } from "@async-swap/utils/TransientStorage.sol";
+import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @title Algorithm 2: Buy and Sell Ordering by Jiasun Li.
 /// @author Jiasun Li @ Async Labs
@@ -28,7 +30,9 @@ import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 ///   }
 ///   cumulatedVolume += nextTxBuyXVolume
 /// }
-contract Algorithm2 is BaseAlgorithm {
+contract Algorithm2 is BaseAlgorithm, TransientStorage {
+
+  using SafeCast for *;
 
   /// keccak256("algorithm2.isPrevBuy");
   bytes32 constant IS_PREV_BUY = 0x7e127a7bb2f4deeecd5997d5af18c995b303c3436532e9385868994ad2327421;
@@ -65,12 +69,10 @@ contract Algorithm2 is BaseAlgorithm {
     bool lockSell;
     int256 cummulativeAmount;
 
-    assembly ("memory-safe") {
-      isPrevBuy := tload(IS_PREV_BUY)
-      lockBuy := tload(LOCK_BUY)
-      lockSell := tload(LOCK_SELL)
-      cummulativeAmount := tload(CUMULATIVE_AMOUNT)
-    }
+    isPrevBuy = tload(IS_PREV_BUY) != 0x00;
+    lockBuy = tload(LOCK_BUY) != 0x00;
+    lockSell = tload(LOCK_SELL) != 0x00;
+    cummulativeAmount = uint256(tload(CUMULATIVE_AMOUNT)).toInt256();
 
     {
       // before excuting
@@ -87,19 +89,19 @@ contract Algorithm2 is BaseAlgorithm {
     {
       // after executing
       if (cummulativeAmount > 0) {
-        assembly ("memory-safe") {
-          tstore(LOCK_BUY, false)
-          tstore(LOCK_SELL, true)
-        }
+        tstore(LOCK_BUY, 0x00);
+        tstore(LOCK_SELL, 0x0000000000000000000000000000000000000000000000000000000000000001);
       } else {
-        assembly ("memory-safe") {
-          tstore(LOCK_BUY, true)
-          tstore(LOCK_SELL, false)
-        }
+        tstore(LOCK_BUY, 0x0000000000000000000000000000000000000000000000000000000000000001);
+        tstore(LOCK_SELL, 0x00);
       }
-      assembly ("memory-safe") {
-        tstore(IS_PREV_BUY, isNextBuy)
-      }
+
+      tstore(
+        IS_PREV_BUY,
+        isNextBuy
+          ? bytes32(0x0000000000000000000000000000000000000000000000000000000000000001)
+          : bytes32(0x0000000000000000000000000000000000000000000000000000000000000000)
+      );
 
       cummulativeAmount += zeroForOne ? int256(amount) : -int256(amount);
     }
