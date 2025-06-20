@@ -25,6 +25,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
   using CurrencySettler for Currency;
   using PoolIdLibrary for PoolKey;
 
+  /// @notice Algorithm used for ordering transactions in our Async Swap CSMM.
   IAlgorithm public algorithm;
   mapping(PoolId poolId => mapping(address user => mapping(bool zeroForOne => uint256 claimable))) public asyncOrders;
   mapping(address owner => mapping(address executor => bool)) public setExecutor;
@@ -101,6 +102,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     return 0;
   }
 
+  /// @inheritdoc IAsyncCSMM
   function executeOrders(AsyncOrder[] calldata orders, bytes calldata userParams) external {
     for (uint8 i = 0; i < orders.length; i++) {
       AsyncOrder calldata order = orders[i];

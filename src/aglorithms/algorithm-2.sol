@@ -30,6 +30,7 @@ import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 /// }
 contract Algorithm2 is IAlgorithm {
 
+  /// @notice The address of the hook that will call this algorithm.
   address immutable hookAddress;
 
   /// keccak256("algorithm2.isPrevBuy");
@@ -41,15 +42,19 @@ contract Algorithm2 is IAlgorithm {
   /// keccak256("algorithm2.cummulativeAmount");
   bytes32 constant CUMULATIVE_AMOUNT = 0xd54a46fd16a77402970e6a9bd6bbd09b1f768d3161ee91442eaa078698d0f85a;
 
+  /// @notice Constructor to set the hook address.
+  /// @param _hookAddress The address of the hook that will call this algorithm.
   constructor(address _hookAddress) {
     hookAddress = _hookAddress;
   }
 
+  /// @notice Modifier to restrict access to the hook address.
   modifier onlyHook() {
     require(msg.sender == hookAddress, "Only hook can call this function");
     _;
   }
 
+  /// @inheritdoc IAlgorithm
   function name() external pure returns (string memory) {
     return "Algorithm2";
   }
@@ -60,9 +65,7 @@ contract Algorithm2 is IAlgorithm {
     return zeroForOne ? true : false;
   }
 
-  /// @notice Function to enforce transaction ordering based on Algorithm 2.
-  /// @param zeroForOne true if the next transaction is a buy (zeroForOne = true) or a sell (zeroForOne = false).
-  /// @param amount The amount of the transaction.
+  /// @inheritdoc IAlgorithm
   function orderingRule(bool zeroForOne, uint256 amount) external onlyHook {
     bool isNextBuy;
     bool isPrevBuy;
