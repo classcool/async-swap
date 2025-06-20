@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.26;
 
-import { Algorithm2 } from "@async-swap/aglorithms/algorithm-2.sol";
+import { Algorithm2 } from "@async-swap/algorithms/algorithm-2.sol";
 import { IAlgorithm } from "@async-swap/interfaces/IAlgorithm.sol";
 import { IAsyncSwapAMM, IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwapAMM.sol";
 import { IRouter } from "@async-swap/interfaces/IRouter.sol";
