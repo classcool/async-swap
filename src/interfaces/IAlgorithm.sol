@@ -16,4 +16,8 @@ interface IAlgorithm {
   /// @return The name of the algorithm as a string.
   function name() external view returns (string memory);
 
+  /// @notice Version of the algorithm.
+  /// @return The version of the algorithm as a string.
+  function version() external view returns (string memory);
+
 }

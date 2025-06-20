@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
-import { IAlgorithm } from "@async-swap/interfaces/IAlgorithm.sol";
+import { BaseAlgorithm } from "./BaseAlgorithm.sol";
 import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 
 /// @title Algorithm 2: Buy and Sell Ordering by Jiasun Li.
@@ -28,10 +28,7 @@ import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 ///   }
 ///   cumulatedVolume += nextTxBuyXVolume
 /// }
-contract Algorithm2 is IAlgorithm {
-
-  /// @notice The address of the hook that will call this algorithm.
-  address immutable hookAddress;
+contract Algorithm2 is BaseAlgorithm {
 
   /// keccak256("algorithm2.isPrevBuy");
   bytes32 constant IS_PREV_BUY = 0x7e127a7bb2f4deeecd5997d5af18c995b303c3436532e9385868994ad2327421;
@@ -42,21 +39,16 @@ contract Algorithm2 is IAlgorithm {
   /// keccak256("algorithm2.cummulativeAmount");
   bytes32 constant CUMULATIVE_AMOUNT = 0xd54a46fd16a77402970e6a9bd6bbd09b1f768d3161ee91442eaa078698d0f85a;
 
-  /// @notice Constructor to set the hook address.
-  /// @param _hookAddress The address of the hook that will call this algorithm.
-  constructor(address _hookAddress) {
-    hookAddress = _hookAddress;
-  }
+  constructor(address _hookAddress) BaseAlgorithm(_hookAddress) { }
 
-  /// @notice Modifier to restrict access to the hook address.
-  modifier onlyHook() {
-    require(msg.sender == hookAddress, "Only hook can call this function");
-    _;
-  }
-
-  /// @inheritdoc IAlgorithm
-  function name() external pure returns (string memory) {
+  /// @inheritdoc BaseAlgorithm
+  function name() external pure override returns (string memory) {
     return "Algorithm2";
+  }
+
+  /// @inheritdoc BaseAlgorithm
+  function version() external pure override returns (string memory) {
+    return "1.0.0";
   }
 
   /// Determines if the next transaction is a buy or a sell.
@@ -65,8 +57,8 @@ contract Algorithm2 is IAlgorithm {
     return zeroForOne ? true : false;
   }
 
-  /// @inheritdoc IAlgorithm
-  function orderingRule(bool zeroForOne, uint256 amount) external onlyHook {
+  /// @inheritdoc BaseAlgorithm
+  function orderingRule(bool zeroForOne, uint256 amount) external virtual override onlyHook {
     bool isNextBuy;
     bool isPrevBuy;
     bool lockBuy;
