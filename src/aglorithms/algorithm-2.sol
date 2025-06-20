@@ -84,7 +84,7 @@ contract Algorithm2 is IAlgorithm {
         require(isNextBuy, "Buy order expected");
       } else {
         if (lockSell) {
-          require(isNextBuy, "Sell order expected");
+          require(!isNextBuy, "Sell order expected");
         }
       }
     }
@@ -93,13 +93,13 @@ contract Algorithm2 is IAlgorithm {
       // after executing
       if (cummulativeAmount > 0) {
         assembly ("memory-safe") {
-          tstore(LOCK_BUY, true)
-          tstore(LOCK_SELL, false)
+          tstore(LOCK_BUY, false)
+          tstore(LOCK_SELL, true)
         }
       } else {
         assembly ("memory-safe") {
-          tstore(LOCK_BUY, false)
-          tstore(LOCK_SELL, true)
+          tstore(LOCK_BUY, true)
+          tstore(LOCK_SELL, false)
         }
       }
       assembly ("memory-safe") {
