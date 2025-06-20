@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { AsyncCSMM } from "../src/AsyncCSMM.sol";
-import { IAsyncCSMM } from "../src/interfaces/IAsyncCSMM.sol";
-import { Router } from "../src/router.sol";
 import { FFIHelper } from "./FFIHelper.sol";
+import { AsyncSwapCSMM } from "@async-swap/AsyncCSMM.sol";
+import { IAsyncSwapAMM } from "@async-swap/interfaces/IAsyncSwapAMM.sol";
+import { Router } from "@async-swap/router.sol";
 import { console } from "forge-std/Test.sol";
 import { IERC20Minimal } from "v4-core/interfaces/external/IERC20Minimal.sol";
 import { Currency } from "v4-core/types/Currency.sol";
@@ -17,7 +17,7 @@ contract ExecuteAsyncOrderScript is FFIHelper {
   Currency currency0;
   Currency currency1;
   PoolKey key;
-  IAsyncCSMM.AsyncOrder order;
+  IAsyncSwapAMM.AsyncOrder order;
   Router router;
 
   function setUp() public {

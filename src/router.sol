@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { IAsyncSwapAMM } from "@async-swap/interfaces/IAsyncCSMM.sol";
-import { IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwap.sol";
+import { IAsyncSwapAMM } from "@async-swap/interfaces/IAsyncSwapAMM.sol";
+import { IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwapOrder.sol";
 import { IRouter } from "@async-swap/interfaces/IRouter.sol";
 import { CurrencySettler } from "@uniswap/v4-core/test/utils/CurrencySettler.sol";
 import { console } from "forge-std/Test.sol";
@@ -49,9 +49,9 @@ contract Router is IRouter {
   }
 
   /// @inheritdoc IRouter
-  function swap(IAsyncSwap.AsyncOrder calldata order, bytes memory userData) external {
+  function swap(IAsyncSwapOrder.AsyncOrder calldata order, bytes memory userData) external {
     address onBehalf = address(this);
-    IAsyncCSMM.UserParams memory userParams = abi.decode(userData, (IAsyncSwapAMM.UserParams));
+    IAsyncSwapAMM.UserParams memory userParams = abi.decode(userData, (IAsyncSwapAMM.UserParams));
     require(userParams.executor == address(this), "Use router as your executor!");
     assembly ("memory-safe") {
       tstore(USER_LOCATION, caller())
@@ -62,10 +62,11 @@ contract Router is IRouter {
   }
 
   /// @inheritdoc IRouter
-  function fillOrder(IAsyncSwap.AsyncOrder calldata order, bytes calldata userData) external {
+  function fillOrder(IAsyncSwapOrder.AsyncOrder calldata order, bytes calldata) external {
     address onBehalf = address(this);
     assembly ("memory-safe") {
       tstore(USER_LOCATION, caller())
+      /// force the async filler to be this router, otherwise could be a user parameter
       tstore(ASYNC_FILLER_LOCATION, onBehalf)
     }
 

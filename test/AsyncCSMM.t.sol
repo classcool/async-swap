@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import { SetupHook } from "./SetupHook.sol";
-import { AsyncCSMM } from "@async-swap/AsyncCSMM.sol";
+import { AsyncSwapCSMM } from "@async-swap/AsyncCSMM.sol";
 import { IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwapOrder.sol";
 import { IRouter } from "@async-swap/interfaces/IRouter.sol";
 import { console } from "forge-std/Test.sol";
@@ -52,8 +52,13 @@ contract AsyncCsmmTest is SetupHook {
       token1.approve(address(router), amount);
     }
 
-    IAsyncSwap.AsyncOrder memory order =
-      IAsyncSwap.AsyncOrder({ key: key, owner: user, zeroForOne: zeroForOne, amountIn: amount, sqrtPrice: 2 ** 96 });
+    IAsyncSwapOrder.AsyncOrder memory order = IAsyncSwapOrder.AsyncOrder({
+      key: key,
+      owner: user,
+      zeroForOne: zeroForOne,
+      amountIn: amount,
+      sqrtPrice: 2 ** 96
+    });
 
     router.swap(order, abi.encode(user, asyncFiller));
     vm.stopPrank();
@@ -125,8 +130,13 @@ contract AsyncCsmmTest is SetupHook {
       token1.approve(address(router), amount);
     }
 
-    IAsyncSwap.AsyncOrder memory order =
-      IAsyncSwap.AsyncOrder({ key: key, owner: user, zeroForOne: zeroForOne, amountIn: amount, sqrtPrice: 2 ** 96 });
+    IAsyncSwapOrder.AsyncOrder memory order = IAsyncSwapOrder.AsyncOrder({
+      key: key,
+      owner: user,
+      zeroForOne: zeroForOne,
+      amountIn: amount,
+      sqrtPrice: 2 ** 96
+    });
 
     router.swap(order, abi.encode(user, asyncFiller));
 

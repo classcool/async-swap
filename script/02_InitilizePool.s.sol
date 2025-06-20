@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { AsyncCSMM } from "../src/AsyncCSMM.sol";
+import { AsyncSwapCSMM } from "../src/AsyncCSMM.sol";
 import { FFIHelper } from "./FFIHelper.sol";
 import { console } from "forge-std/Test.sol";
 import { MockERC20 } from "solmate/src/test/utils/mocks/MockERC20.sol";
@@ -15,7 +15,7 @@ import { PoolKey } from "v4-core/types/PoolKey.sol";
 contract IntializePool is FFIHelper {
 
   IPoolManager manager;
-  AsyncCSMM hook;
+  AsyncSwapCSMM hook;
   Currency currency0;
   Currency currency1;
   PoolKey key;
@@ -25,7 +25,7 @@ contract IntializePool is FFIHelper {
   function setUp() public {
     manager = IPoolManager(_getDeployedPoolManager());
     (address _hook,) = _getDeployedHook();
-    hook = AsyncCSMM(_hook);
+    hook = AsyncSwapCSMM(_hook);
   }
 
   function run() public {
