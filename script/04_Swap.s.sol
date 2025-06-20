@@ -2,8 +2,8 @@
 pragma solidity 0.8.26;
 
 import { FFIHelper } from "./FFIHelper.sol";
-import { IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwapOrder.sol";
 import { Router } from "@async-swap/router.sol";
+import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 import { console } from "forge-std/Test.sol";
 import { IERC20Minimal } from "v4-core/interfaces/external/IERC20Minimal.sol";
 import { Currency } from "v4-core/types/Currency.sol";
@@ -17,7 +17,7 @@ contract SwapScript is FFIHelper {
   Currency currency1;
   PoolKey key;
   Router router;
-  IAsyncSwapOrder.AsyncOrder order;
+  AsyncOrder order;
 
   function setUp() public {
     (, address _router) = _getDeployedHook();
@@ -32,7 +32,7 @@ contract SwapScript is FFIHelper {
 
     uint256 amount = 100;
     bool zeroForOne = true;
-    order = IAsyncSwapOrder.AsyncOrder(key, OWNER, zeroForOne, amount, 2 ** 96);
+    order = AsyncOrder(key, OWNER, zeroForOne, amount, 2 ** 96);
 
     if (zeroForOne) {
       IERC20Minimal(Currency.unwrap(order.key.currency0)).approve(address(router), uint256(amount));

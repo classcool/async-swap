@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import { FFIHelper } from "./FFIHelper.sol";
-import { AsyncSwapCSMM } from "@async-swap/AsyncCSMM.sol";
+import { AsyncSwapCSMM } from "@async-swap/AsyncSwapCSMM.sol";
 import { Router } from "@async-swap/router.sol";
 import { console } from "forge-std/Test.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";

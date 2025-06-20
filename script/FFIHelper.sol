@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { AsyncSwapCSMM } from "@async-swap/AsyncCSMM.sol";
-import { IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwapOrder.sol";
+import { AsyncSwapCSMM } from "@async-swap/AsyncSwapCSMM.sol";
+import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 import { Script, console } from "forge-std/Script.sol";
 import { stdJson } from "forge-std/Test.sol";
 import { IHooks } from "v4-core/interfaces/IHooks.sol";
@@ -95,7 +95,7 @@ contract FFIHelper is Script {
     address owner;
   }
 
-  function _getAsyncOrder() internal returns (IAsyncSwapOrder.AsyncOrder memory) {
+  function _getAsyncOrder() internal returns (AsyncOrder memory) {
     string memory root = vm.projectRoot();
     string memory broadcastUrl = "/broadcast/04_Swap.s.sol/";
     if (chain == SelectChain.UnichainSepolia) {
@@ -121,8 +121,7 @@ contract FFIHelper is Script {
     uint256 amountIn = uint256(topics[2]);
     PoolKey memory key = _getPoolKey();
 
-    IAsyncSwapOrder.AsyncOrder memory order =
-      IAsyncSwapOrder.AsyncOrder(key, orderData.owner, zeroForOne, amountIn, 2 ** 96);
+    AsyncOrder memory order = AsyncOrder(key, orderData.owner, zeroForOne, amountIn, 2 ** 96);
     return order;
   }
 

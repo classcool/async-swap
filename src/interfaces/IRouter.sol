@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import { IAsyncSwapAMM } from "@async-swap/interfaces/IAsyncSwapAMM.sol";
-import { IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwapOrder.sol";
+import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 
 /// @title Router Interface
 /// @author Async Labs
@@ -23,17 +23,17 @@ interface IRouter {
   /// @param order The async order that is in context for the swap or fill operation.
   struct SwapCallback {
     ActionType action;
-    IAsyncSwapOrder.AsyncOrder order;
+    AsyncOrder order;
   }
 
   /// Swaps tokens using an async order.
   /// @param order The async order to be placed.
   /// @param userData Additional data for the user, allowing user to specify an executor.
-  function swap(IAsyncSwapOrder.AsyncOrder calldata order, bytes calldata userData) external;
+  function swap(AsyncOrder calldata order, bytes calldata userData) external;
 
   /// Fills an async order.
   /// @param order The async order to be filled.
   /// @param userData Additional data for the user, allowing user to specify an executor.
-  function fillOrder(IAsyncSwapOrder.AsyncOrder calldata order, bytes calldata userData) external;
+  function fillOrder(AsyncOrder calldata order, bytes calldata userData) external;
 
 }

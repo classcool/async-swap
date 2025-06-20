@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { AsyncSwapCSMM } from "../src/AsyncCSMM.sol";
 import { FFIHelper } from "./FFIHelper.sol";
+import { AsyncSwapCSMM } from "@async-swap/AsyncSwapCSMM.sol";
 import { console } from "forge-std/Test.sol";
 import { MockERC20 } from "solmate/src/test/utils/mocks/MockERC20.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";

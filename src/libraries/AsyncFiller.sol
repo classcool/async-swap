@@ -49,7 +49,6 @@ library AsyncFiller {
 
   /// Fills async orders in batching mode, allowing multiple orders to be executed in a single transaction.
   /// @param orders An array of async orders to be executed.
-  /// @param self The state of the AsyncFiller library, containing async orders and executors.
   /// @param userParams Additional data for the user, allowing user to specify an executor.
   function executeOrder(AsyncOrder[] calldata orders, State storage self, bytes calldata userParams) external {
     for (uint8 i = 0; i < orders.length; i++) {
@@ -63,8 +62,7 @@ library AsyncFiller {
   /// @notice Fill an async order in an Async Swap AMM.
   /// @param order The async order to be filled.
   /// @param self The state of the AsyncFiller library, containing async orders and executors.
-  /// @param userData Additional data for the user.
-  function _execute(AsyncOrder calldata order, State storage self, bytes calldata userData) private {
+  function _execute(AsyncOrder calldata order, State storage self, bytes calldata) private {
     if (order.amountIn == 0) revert ZeroFillOrder();
 
     PoolId poolId = order.key.toId();

@@ -2,8 +2,8 @@
 pragma solidity 0.8.26;
 
 import { IAsyncSwapAMM } from "@async-swap/interfaces/IAsyncSwapAMM.sol";
-import { IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwapOrder.sol";
 import { IRouter } from "@async-swap/interfaces/IRouter.sol";
+import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 import { CurrencySettler } from "@uniswap/v4-core/test/utils/CurrencySettler.sol";
 import { console } from "forge-std/Test.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
@@ -49,7 +49,7 @@ contract Router is IRouter {
   }
 
   /// @inheritdoc IRouter
-  function swap(IAsyncSwapOrder.AsyncOrder calldata order, bytes memory userData) external {
+  function swap(AsyncOrder calldata order, bytes memory userData) external {
     address onBehalf = address(this);
     IAsyncSwapAMM.UserParams memory userParams = abi.decode(userData, (IAsyncSwapAMM.UserParams));
     require(userParams.executor == address(this), "Use router as your executor!");
@@ -62,7 +62,7 @@ contract Router is IRouter {
   }
 
   /// @inheritdoc IRouter
-  function fillOrder(IAsyncSwapOrder.AsyncOrder calldata order, bytes calldata) external {
+  function fillOrder(AsyncOrder calldata order, bytes calldata) external {
     address onBehalf = address(this);
     assembly ("memory-safe") {
       tstore(USER_LOCATION, caller())
