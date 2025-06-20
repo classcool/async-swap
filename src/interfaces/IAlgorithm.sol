@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
+/// @title Algorithm Interface
+/// @author Async Labs
+/// @notice This interface defines the functions for transaction ordering algorithms used in the Async Swap AMM hook.
 interface IAlgorithm {
 
   /// @notice Executes the transaction ordering algorithm.
