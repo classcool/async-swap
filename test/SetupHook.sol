@@ -66,7 +66,7 @@ contract SetupHook is Test {
         | Hooks.BEFORE_SWAP_RETURNS_DELTA_FLAG
     );
     vm.startPrank(owner);
-    deployCodeTo("AsyncCSMM.sol", abi.encode(manager, owner), address(hookFlags));
+    deployCodeTo("AsyncSwapCSMM.sol", abi.encode(manager, owner), address(hookFlags));
     hook = AsyncSwapCSMM(address(hookFlags));
   }
 
