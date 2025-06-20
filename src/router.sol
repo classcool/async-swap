@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { IAsyncCSMM } from "@async-swap/interfaces/IAsyncCSMM.sol";
-import { IAsyncSwap } from "@async-swap/interfaces/IAsyncSwap.sol";
+import { IAsyncSwapAMM } from "@async-swap/interfaces/IAsyncCSMM.sol";
+import { IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwap.sol";
 import { IRouter } from "@async-swap/interfaces/IRouter.sol";
 import { CurrencySettler } from "@uniswap/v4-core/test/utils/CurrencySettler.sol";
 import { console } from "forge-std/Test.sol";
@@ -25,7 +25,7 @@ contract Router is IRouter {
   /// PoolManager contract to interact with the pools.
   IPoolManager immutable poolManager;
   /// Async Swap Hook contract to execute async orders.
-  IAsyncCSMM immutable hook;
+  IAsyncSwapAMM immutable hook;
 
   /// keccak256("Router.ActionType") - 1
   bytes32 constant ACTION_LOCATION = 0xf3b150ebf41dad0872df6788629edb438733cb4a5c9ea779b1b1f3614faffc69;
@@ -37,7 +37,7 @@ contract Router is IRouter {
   /// Initializes the Router contract with the PoolManager and Async CSMM hook.
   /// @param _poolManager The PoolManager contract that manages the pools.
   /// @param _hook The Async CSMM hook contract that executes async orders.
-  constructor(IPoolManager _poolManager, IAsyncCSMM _hook) {
+  constructor(IPoolManager _poolManager, IAsyncSwapAMM _hook) {
     poolManager = _poolManager;
     hook = _hook;
   }
@@ -51,7 +51,7 @@ contract Router is IRouter {
   /// @inheritdoc IRouter
   function swap(IAsyncSwap.AsyncOrder calldata order, bytes memory userData) external {
     address onBehalf = address(this);
-    IAsyncCSMM.UserParams memory userParams = abi.decode(userData, (IAsyncCSMM.UserParams));
+    IAsyncCSMM.UserParams memory userParams = abi.decode(userData, (IAsyncSwapAMM.UserParams));
     require(userParams.executor == address(this), "Use router as your executor!");
     assembly ("memory-safe") {
       tstore(USER_LOCATION, caller())

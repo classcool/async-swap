@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import { SetupHook } from "./SetupHook.sol";
 import { AsyncCSMM } from "@async-swap/AsyncCSMM.sol";
-import { IAsyncSwap } from "@async-swap/interfaces/IAsyncSwap.sol";
+import { IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwapOrder.sol";
 import { IRouter } from "@async-swap/interfaces/IRouter.sol";
 import { console } from "forge-std/Test.sol";
 import { Currency, IHooks, IPoolManager } from "v4-core/interfaces/IPoolManager.sol";

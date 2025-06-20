@@ -3,7 +3,7 @@ pragma solidity 0.8.26;
 
 import { Algorithm2 } from "@async-swap/aglorithms/algorithm-2.sol";
 import { IAlgorithm } from "@async-swap/interfaces/IAlgorithm.sol";
-import { IAsyncCSMM, IAsyncSwap } from "@async-swap/interfaces/IAsyncCSMM.sol";
+import { IAsyncSwapAMM, IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwapAMM.sol";
 import { IRouter } from "@async-swap/interfaces/IRouter.sol";
 import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 import { CurrencySettler } from "@uniswap/v4-core/test/utils/CurrencySettler.sol";
@@ -17,17 +17,20 @@ import { PoolId } from "v4-core/types/PoolId.sol";
 import { PoolIdLibrary, PoolKey } from "v4-core/types/PoolKey.sol";
 import { BaseHook } from "v4-periphery/src/utils/BaseHook.sol";
 
-/// @title Async CSMM
-/// @notice A NoOp Hook that has custom accounting minting 1:1 assets
-contract AsyncCSMM is BaseHook, IAsyncCSMM {
+/// @title Async Swap CSMM Contract
+/// @author Async Labs
+/// @notice This contract implemIAsyncAMMsync Constant Sum Market Maker (CSMM) functionality.
+contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
 
   using SafeCast for *;
   using CurrencySettler for Currency;
   using PoolIdLibrary for PoolKey;
 
-  /// @notice Algorithm used for ordering transactions in our Async Swap CSMM.
+  /// @notice Algorithm used for ordering transactions in our Async Swap AMM.
   IAlgorithm public algorithm;
+  /// @notice Mapping to store async orders.
   mapping(PoolId poolId => mapping(address user => mapping(bool zeroForOne => uint256 claimable))) public asyncOrders;
+  /// @notice Mapping to store executor permissions for users.
   mapping(address owner => mapping(address executor => bool)) public setExecutor;
 
   /// Event emitted when a swap is executed.
@@ -49,6 +52,8 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
   /// @notice Error thrown when liquidity is not supported in this hook.
   error UnsupportedLiquidity();
 
+  /// Initializes the Async Swap Hook contract with the PoolManager address and sets an transaction ordering algorithm.
+  /// @param poolManager The address of the PoolManager contract.
   constructor(IPoolManager poolManager) BaseHook(poolManager) {
     algorithm = new Algorithm2(address(this));
   }
@@ -89,7 +94,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     revert UnsupportedLiquidity();
   }
 
-  /// @inheritdoc IAsyncSwap
+  /// @inheritdoc IAsyncSwapOrder
   function isExecutor(address owner, address executor) public view returns (bool) {
     return setExecutor[owner][executor];
   }
@@ -102,7 +107,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     return 0;
   }
 
-  /// @inheritdoc IAsyncCSMM
+  /// @inheritdoc IAsyncSwapAMM
   function executeOrders(AsyncOrder[] calldata orders, bytes calldata userParams) external {
     for (uint8 i = 0; i < orders.length; i++) {
       AsyncOrder calldata order = orders[i];
@@ -112,7 +117,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     }
   }
 
-  /// @inheritdoc IAsyncCSMM
+  /// @inheritdoc IAsyncSwapAMM
   function executeOrder(AsyncOrder calldata order, bytes calldata) external {
     address owner = order.owner;
     uint256 amountIn = order.amountIn;

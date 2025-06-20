@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import { IAsyncSwap } from "@async-swap/interfaces/IAsyncSwap.sol";
+import { IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwapOrder.sol";
 import { PoolKey } from "v4-core/types/PoolKey.sol";
 
-/// @title Async CSMM Interface
+/// @title Async Swap AMM Interface
 /// @author Async Labs
 /// @notice This interface defines the functions for the Async CSMM (Constant Sum Market Maker) contract.
-interface IAsyncCSMM is IAsyncSwap {
+interface IAsyncSwapAMM is IAsyncSwapOrder {
 
   /// @notice Struct representing the user parameters for executing an async order.
   /// @param order The async order to be executed.

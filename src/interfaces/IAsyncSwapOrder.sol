@@ -8,7 +8,7 @@ import { PoolKey } from "v4-core/types/PoolKey.sol";
 /// @title Async Swap Interface
 /// @author Async Labs
 /// @notice This interface defines the functions for the Async Swap orders.
-interface IAsyncSwap {
+interface IAsyncSwapOrder {
 
   /// @notice Emitted when an async order is filled.
   /// @param poolId The poolId of the pool where the order is placed.
