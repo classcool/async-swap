@@ -2,6 +2,7 @@
 pragma solidity ^0.8.26;
 
 import { BaseAlgorithm } from "./BaseAlgorithm.sol";
+import { IAlgorithm } from "@async-swap/interfaces/IAlgorithm.sol";
 import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 import { TransientStorage } from "@async-swap/utils/TransientStorage.sol";
 import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
@@ -45,12 +46,12 @@ contract Algorithm2 is BaseAlgorithm, TransientStorage {
 
   constructor(address _hookAddress) BaseAlgorithm(_hookAddress) { }
 
-  /// @inheritdoc BaseAlgorithm
+  /// @inheritdoc IAlgorithm
   function name() external pure override returns (string memory) {
     return "Algorithm2";
   }
 
-  /// @inheritdoc BaseAlgorithm
+  /// @inheritdoc IAlgorithm
   function version() external pure override returns (string memory) {
     return "1.0.0";
   }
@@ -61,7 +62,7 @@ contract Algorithm2 is BaseAlgorithm, TransientStorage {
     return zeroForOne ? true : false;
   }
 
-  /// @inheritdoc BaseAlgorithm
+  /// @inheritdoc IAlgorithm
   function orderingRule(bool zeroForOne, uint256 amount) external virtual override onlyHook {
     bool isNextBuy;
     bool isPrevBuy;
