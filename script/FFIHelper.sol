@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import { AsyncCSMM } from "../src/AsyncCSMM.sol";
-import { IAsyncSwap } from "../src/interfaces/IAsyncSwap.sol";
+import { AsyncSwapCSMM } from "@async-swap/AsyncSwapCSMM.sol";
+import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 import { Script, console } from "forge-std/Script.sol";
 import { stdJson } from "forge-std/Test.sol";
 import { IHooks } from "v4-core/interfaces/IHooks.sol";
@@ -95,7 +95,7 @@ contract FFIHelper is Script {
     address owner;
   }
 
-  function _getAsyncOrder() internal returns (IAsyncSwap.AsyncOrder memory) {
+  function _getAsyncOrder() internal returns (AsyncOrder memory) {
     string memory root = vm.projectRoot();
     string memory broadcastUrl = "/broadcast/04_Swap.s.sol/";
     if (chain == SelectChain.UnichainSepolia) {
@@ -121,7 +121,7 @@ contract FFIHelper is Script {
     uint256 amountIn = uint256(topics[2]);
     PoolKey memory key = _getPoolKey();
 
-    IAsyncSwap.AsyncOrder memory order = IAsyncSwap.AsyncOrder(key, orderData.owner, zeroForOne, amountIn, 2 ** 96);
+    AsyncOrder memory order = AsyncOrder(key, orderData.owner, zeroForOne, amountIn, 2 ** 96);
     return order;
   }
 
@@ -130,7 +130,7 @@ contract FFIHelper is Script {
     (address hook,) = _getDeployedHook();
     Currency currency0 = Currency.wrap(address(uint160(keyTopics[2])));
     Currency currency1 = Currency.wrap(address(uint160(keyTopics[3])));
-    PoolKey memory key = PoolKey(currency0, currency1, LPFeeLibrary.DYNAMIC_FEE_FLAG, 60, AsyncCSMM(hook));
+    PoolKey memory key = PoolKey(currency0, currency1, LPFeeLibrary.DYNAMIC_FEE_FLAG, 60, AsyncSwapCSMM(hook));
     return key;
   }
 

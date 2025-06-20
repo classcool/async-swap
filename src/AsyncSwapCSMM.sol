@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.26;
 
-import { IAsyncCSMM } from "./interfaces/IAsyncCSMM.sol";
-import { IRouter } from "./interfaces/IRouter.sol";
+import { Algorithm2 } from "@async-swap/aglorithms/algorithm-2.sol";
+import { IAlgorithm } from "@async-swap/interfaces/IAlgorithm.sol";
+import { IAsyncSwapAMM, IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwapAMM.sol";
+import { IRouter } from "@async-swap/interfaces/IRouter.sol";
+import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 import { CurrencySettler } from "@uniswap/v4-core/test/utils/CurrencySettler.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
 import { Hooks } from "v4-core/libraries/Hooks.sol";
@@ -14,18 +17,29 @@ import { PoolId } from "v4-core/types/PoolId.sol";
 import { PoolIdLibrary, PoolKey } from "v4-core/types/PoolKey.sol";
 import { BaseHook } from "v4-periphery/src/utils/BaseHook.sol";
 
-/// @title Async CSMM
-/// @notice A NoOp Hook that has custom accounting minting 1:1 assets
-contract AsyncCSMM is BaseHook, IAsyncCSMM {
+/// @title Async Swap CSMM Contract
+/// @author Async Labs
+/// @notice This contract implemIAsyncAMMsync Constant Sum Market Maker (CSMM) functionality.
+contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
 
   using SafeCast for *;
   using CurrencySettler for Currency;
   using PoolIdLibrary for PoolKey;
 
+  /// @notice Algorithm used for ordering transactions in our Async Swap AMM.
+  IAlgorithm public algorithm;
+  /// @notice Mapping to store async orders.
   mapping(PoolId poolId => mapping(address user => mapping(bool zeroForOne => uint256 claimable))) public asyncOrders;
+  /// @notice Mapping to store executor permissions for users.
   mapping(address owner => mapping(address executor => bool)) public setExecutor;
 
-  /// @dev Event emitted when a swap is executed.
+  /// Event emitted when a swap is executed.
+  /// @param id The poolId of the pool where the swap occurred.
+  /// @param sender The address that initiated the swap.
+  /// @param amount0 The amount of currency0 taken in the swap (negative for exact input).
+  /// @param amount1 The amount of currency1 taken in the swap (negative for exact input).
+  /// @param hookLPfeeAmount0 Fee amount taken for LP in currency0.
+  /// @param hookLPfeeAmount1 Fee amount taken for LP in currency1.
   event HookSwap(
     bytes32 indexed id,
     address indexed sender,
@@ -35,17 +49,22 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     uint128 hookLPfeeAmount1
   );
 
-  address asyncExecutor;
-
+  /// @notice Error thrown when liquidity is not supported in this hook.
   error UnsupportedLiquidity();
 
-  constructor(IPoolManager poolManager) BaseHook(poolManager) { }
+  /// Initializes the Async Swap Hook contract with the PoolManager address and sets an transaction ordering algorithm.
+  /// @param poolManager The address of the PoolManager contract.
+  constructor(IPoolManager poolManager) BaseHook(poolManager) {
+    algorithm = new Algorithm2(address(this));
+  }
 
+  /// @inheritdoc BaseHook
   function _beforeInitialize(address, PoolKey calldata key, uint160) internal virtual override returns (bytes4) {
     require(key.fee == LPFeeLibrary.DYNAMIC_FEE_FLAG, "Dude use dynamic fees flag");
     return this.beforeInitialize.selector;
   }
 
+  /// @inheritdoc BaseHook
   function getHookPermissions() public pure override returns (Hooks.Permissions memory) {
     return Hooks.Permissions({
       beforeInitialize: true,
@@ -65,6 +84,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     });
   }
 
+  /// @inheritdoc BaseHook
   function _beforeAddLiquidity(address, PoolKey calldata, IPoolManager.ModifyLiquidityParams calldata, bytes calldata)
     internal
     pure
@@ -74,9 +94,9 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     revert UnsupportedLiquidity();
   }
 
-  /// @notice Check if user is executor address
-  function isExecutor(AsyncOrder calldata order, address executor) public view returns (bool) {
-    return setExecutor[order.owner][executor];
+  /// @inheritdoc IAsyncSwapOrder
+  function isExecutor(address owner, address executor) public view returns (bool) {
+    return setExecutor[owner][executor];
   }
 
   function calculateHookFee(uint256) public pure returns (uint256) {
@@ -87,29 +107,46 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     return 0;
   }
 
-  function executeOrder(AsyncOrder calldata order, bytes calldata) external {
-    if (order.amountIn == 0) revert ZeroFillOrder();
+  /// @inheritdoc IAsyncSwapAMM
+  function executeOrders(AsyncOrder[] calldata orders, bytes calldata userParams) external {
+    for (uint8 i = 0; i < orders.length; i++) {
+      AsyncOrder calldata order = orders[i];
+      // Use transaction ordering algorithm to ensure correct execution order
+      algorithm.orderingRule(order.zeroForOne, uint256(order.amountIn));
+      this.executeOrder(order, userParams);
+    }
+  }
 
+  /// @inheritdoc IAsyncSwapAMM
+  function executeOrder(AsyncOrder calldata order, bytes calldata) external {
+    address owner = order.owner;
+    uint256 amountIn = order.amountIn;
+    bool zeroForOne = order.zeroForOne;
+    Currency currency0 = order.key.currency0;
+    Currency currency1 = order.key.currency1;
     PoolId poolId = order.key.toId();
-    uint256 amountToFill = uint256(order.amountIn);
-    uint256 claimableAmount = asyncOrders[poolId][order.owner][order.zeroForOne];
+
+    if (amountIn == 0) revert ZeroFillOrder();
+
+    uint256 amountToFill = uint256(amountIn);
+    uint256 claimableAmount = asyncOrders[poolId][owner][zeroForOne];
     require(amountToFill <= claimableAmount, "Max fill order limit exceed");
-    require(isExecutor(order, msg.sender), "Caller is valid not excutor");
+    require(isExecutor(owner, msg.sender), "Caller is valid not excutor");
 
     /// @dev Transfer currency of async order to user
     Currency currencyTake;
     Currency currencyFill;
     if (order.zeroForOne) {
-      currencyTake = order.key.currency0;
-      currencyFill = order.key.currency1;
+      currencyTake = currency0;
+      currencyFill = currency1;
     } else {
-      currencyTake = order.key.currency1;
-      currencyFill = order.key.currency0;
+      currencyTake = currency1;
+      currencyFill = currency0;
     }
 
-    asyncOrders[poolId][order.owner][order.zeroForOne] -= amountToFill;
-    poolManager.transfer(order.owner, currencyTake.toId(), amountToFill);
-    emit AsyncOrderFilled(poolId, order.owner, order.zeroForOne, amountToFill);
+    asyncOrders[poolId][owner][zeroForOne] -= amountToFill;
+    poolManager.transfer(owner, currencyTake.toId(), amountToFill);
+    emit AsyncOrderFilled(poolId, owner, zeroForOne, amountToFill);
 
     /// @dev Take currencyFill from filler
     /// @dev Hook may charge filler a hook fee
@@ -118,7 +155,7 @@ contract AsyncCSMM is BaseHook, IAsyncCSMM {
     currencyFill.settle(poolManager, msg.sender, amountToFill, false); // transfer
   }
 
-  /// @notice Creates async order that hook will fill in the future
+  /// @inheritdoc BaseHook
   function _beforeSwap(
     address sender,
     PoolKey calldata key,

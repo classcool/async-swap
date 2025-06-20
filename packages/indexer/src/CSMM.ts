@@ -1,6 +1,5 @@
 import { ponder } from "ponder:registry";
 import schema from "ponder:schema";
-import { toHex } from "viem";
 import { WebSocketServer } from "ws";
 
 const wss = new WebSocketServer({ port: 8080 });
@@ -8,35 +7,6 @@ const clients: WebSocket[] = [];
 
 wss.on("connection", (ws: WebSocket) => {
 	clients.push(ws);
-});
-
-ponder.on("CsmmHook:HookModifyLiquidity", async ({ event, context }) => {
-	await context.db
-		.insert(schema.user)
-		.values({
-			sender: event.transaction.from,
-			chainId: context.network.chainId,
-			totalLiquiditys: 1,
-			timestamp: event.block.timestamp,
-		})
-		.onConflictDoUpdate((row) => ({
-			totalLiquiditys: row.totalLiquiditys + 1,
-			timestamp: event.block.timestamp,
-		}));
-
-	for (const client of clients) {
-		if (client.readyState === WebSocket.OPEN) {
-			client.send(
-				JSON.stringify({
-					message: "Add Liquidity",
-					poolId: event.args.id,
-					sender: event.args.sender,
-					amount0: toHex(event.args.amount0),
-					amount1: toHex(event.args.amount1),
-				}),
-			);
-		}
-	}
 });
 
 ponder.on("CsmmHook:AsyncSwapOrder", async ({ event, context }) => {

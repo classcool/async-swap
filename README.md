@@ -87,6 +87,14 @@ bun run dev
 
 Go to [http://localhost:42069](http://localhost:42069) to query orders from hook events
 
+## Docs
+
+View documentation:
+
+```sh
+forge doc --serve --port 4000 --watch
+
+```
 ## Acknowledgment
 
 Thanks to [Atrium Academy](https://atrium.academy), over the past 2 months we build this project during Uniswap Hook incubator program.
