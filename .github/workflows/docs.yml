@@ -4,6 +4,9 @@ on:
   push: # all branches
     branches: ["**"]
 
+permissions:
+  contents: write # to allow publishing to GitHub Pages
+
 jobs:
   build-and-deploy-docs:
     runs-on: ubuntu-latest
