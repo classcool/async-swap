@@ -2,7 +2,8 @@
 pragma solidity ^0.8.13;
 
 import { SetupHook } from "./SetupHook.sol";
-import { Algorithm2, IAlgorithm } from "@async-swap/aglorithms/algorithm-2.sol";
+import { Algorithm2 } from "@async-swap/aglorithms/algorithm-2.sol";
+import { IAlgorithm } from "@async-swap/interfaces/IAlgorithm.sol";
 import "forge-std/Test.sol";
 
 contract Algorithm2Test is SetupHook {
