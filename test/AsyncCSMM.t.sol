@@ -60,7 +60,7 @@ contract AsyncCsmmTest is SetupHook {
     vm.stopPrank();
   }
 
-  function testFuzzAsyncSwap(AsyncOrder memory order) public {
+  function testFuzzAsyncSwapAndFillOrder(AsyncOrder memory order) public {
     vm.assume(order.amountIn >= 1);
     vm.assume(order.amountIn < 2 ** 128 / 2);
     topUp(order.owner, order.amountIn);
