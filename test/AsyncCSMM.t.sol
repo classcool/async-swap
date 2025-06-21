@@ -27,8 +27,8 @@ contract AsyncCsmmTest is SetupHook {
     asyncFiller = address(router);
   }
 
-  modifier userAction() {
-    vm.startPrank(user);
+  modifier userAction(address _user) {
+    vm.startPrank(_user);
     _;
     vm.stopPrank();
   }
@@ -38,70 +38,72 @@ contract AsyncCsmmTest is SetupHook {
     token1.transfer(_user, amount);
   }
 
-  function testAsyncSwap() public {
-    uint256 balance0Before = currency0.balanceOf(user);
-    uint256 balance1Before = currency1.balanceOf(user);
-
-    // Perform a test swap //
-    uint256 amount = 1e18;
-    bool zeroForOne = true;
-    vm.startPrank(user);
-    if (zeroForOne) {
-      token0.approve(address(router), amount);
+  function swap(address _user, address _asyncFiller, AsyncOrder memory order) public {
+    vm.startPrank(_user);
+    if (order.zeroForOne) {
+      token0.approve(address(router), order.amountIn);
     } else {
-      token1.approve(address(router), amount);
+      token1.approve(address(router), order.amountIn);
     }
+    router.swap(order, abi.encode(user, _asyncFiller));
+    vm.stopPrank();
+  }
+
+  function fillOrder(address _user, AsyncOrder memory order, address _asyncFiller) public {
+    vm.startPrank(_user);
+    if (order.zeroForOne) {
+      token1.approve(address(router), order.amountIn);
+    } else {
+      token0.approve(address(router), order.amountIn);
+    }
+    router.fillOrder(order, abi.encode(_asyncFiller));
+    vm.stopPrank();
+  }
+
+  function testFuzzAsyncSwap(uint256 amount, bool zeroForOne) public {
+    vm.assume(amount >= 1);
+    vm.assume(amount <= 1 ether);
 
     AsyncOrder memory order =
       AsyncOrder({ key: key, owner: user, zeroForOne: zeroForOne, amountIn: amount, sqrtPrice: 2 ** 96 });
 
-    router.swap(order, abi.encode(user, asyncFiller));
-    vm.stopPrank();
-    // ------------------- //
+    uint256 balance0Before = currency0.balanceOf(user);
+    uint256 balance1Before = currency1.balanceOf(user);
+
+    // swap
+    swap(user, asyncFiller, order);
 
     uint256 balance0After = currency0.balanceOf(user);
     uint256 balance1After = currency1.balanceOf(user);
 
-    // user paid token0
-    assertEq(balance0Before - balance0After, amount);
-
-    // user did not recieve token1 (AsyncSwap)
-    assertEq(balance1Before, balance1After);
-
-    // user received a claimable balance
+    if (zeroForOne) {
+      assertEq(balance0Before - balance0After, amount);
+      assertEq(balance1Before, balance1After);
+    } else {
+      assertEq(balance1Before - balance1After, amount);
+      assertEq(balance0Before, balance0After);
+    }
     assertEq(hook.asyncOrders(poolId, user, zeroForOne), amount);
-
-    // check executor
     assertEq(hook.setExecutor(user, asyncFiller), true);
 
     balance0Before = currency0.balanceOf(user2);
     balance1Before = currency1.balanceOf(user2);
 
-    vm.startPrank(user2);
-    // User 2 does not event need to add liquidity to fill user 1's async order
-    // token0.approve(address(hook), amount);
-    // token1.approve(address(hook), amount);
-    // router.addLiquidity(key, amount, amount);
-
-    // User 2 (LP) decides to fill user 1's order using router
-    if (zeroForOne) {
-      token1.approve(address(router), amount);
-    } else {
-      token0.approve(address(router), amount);
-    }
-    router.fillOrder(order, abi.encode(asyncFiller));
-    vm.stopPrank();
+    // fill
+    fillOrder(user2, order, asyncFiller);
 
     balance0After = currency0.balanceOf(user2);
     balance1After = currency1.balanceOf(user2);
 
-    // user 2 balance 0 remained the same
-    assertEq(balance0Before, balance0After);
-    // user 2 balance increased
-    assertEq(balance1Before - balance1After, amount);
-
-    // user can:
-    assertEq(hook.asyncOrders(poolId, user, zeroForOne), 0);
+    if (zeroForOne) {
+      assertEq(balance0Before, balance0After);
+      assertEq(balance1Before - balance1After, amount);
+      assertEq(hook.asyncOrders(poolId, user, zeroForOne), 0);
+    } else {
+      assertEq(balance1Before, balance1After);
+      assertEq(balance0Before - balance0After, amount);
+      assertEq(hook.asyncOrders(poolId, user, zeroForOne), 0);
+    }
     if (zeroForOne) {
       assertEq(manager.balanceOf(user, currency0.toId()), uint256(amount));
     } else {
@@ -109,10 +111,9 @@ contract AsyncCsmmTest is SetupHook {
     }
   }
 
-  function testFuzzAsyncSwapOrder(bool zeroForOne, uint256 amount, bool settleUsingBurn) public userAction {
+  function testFuzzAsyncSwapOrder(bool zeroForOne, uint256 amount) public userAction(user) {
     vm.assume(amount >= 1);
     vm.assume(amount <= 1 ether);
-    vm.assume(settleUsingBurn == false);
 
     uint256 balance0Before = manager.balanceOf(address(hook), currency0.toId());
     uint256 balance1Before = manager.balanceOf(address(hook), currency0.toId());
