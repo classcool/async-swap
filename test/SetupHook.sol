@@ -48,8 +48,8 @@ contract SetupHook is Test {
   }
 
   function mint() public ownerAction {
-    token0.mint(owner, 100 ether);
-    token1.mint(owner, 100 ether);
+    token0.mint(owner, 2 ** 128 - 1);
+    token1.mint(owner, 2 ** 128 - 1);
   }
 
   function deployPoolManager() public {
