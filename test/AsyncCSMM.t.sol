@@ -60,12 +60,13 @@ contract AsyncCsmmTest is SetupHook {
     vm.stopPrank();
   }
 
-  function testFuzzAsyncSwap(uint256 amount, bool zeroForOne) public {
-    vm.assume(amount >= 1);
-    vm.assume(amount <= 1 ether);
-
-    AsyncOrder memory order =
-      AsyncOrder({ key: key, owner: user, zeroForOne: zeroForOne, amountIn: amount, sqrtPrice: 2 ** 96 });
+  function testFuzzAsyncSwap(AsyncOrder memory order) public {
+    vm.assume(order.amountIn >= 1);
+    vm.assume(order.amountIn < 2 ** 128 / 2);
+    topUp(order.owner, order.amountIn);
+    topUp(user2, order.amountIn);
+    user = order.owner;
+    order.key = key;
 
     uint256 balance0Before = currency0.balanceOf(user);
     uint256 balance1Before = currency1.balanceOf(user);
@@ -76,14 +77,14 @@ contract AsyncCsmmTest is SetupHook {
     uint256 balance0After = currency0.balanceOf(user);
     uint256 balance1After = currency1.balanceOf(user);
 
-    if (zeroForOne) {
-      assertEq(balance0Before - balance0After, amount);
+    if (order.zeroForOne) {
+      assertEq(balance0Before - balance0After, order.amountIn);
       assertEq(balance1Before, balance1After);
     } else {
-      assertEq(balance1Before - balance1After, amount);
+      assertEq(balance1Before - balance1After, order.amountIn);
       assertEq(balance0Before, balance0After);
     }
-    assertEq(hook.asyncOrders(poolId, user, zeroForOne), amount);
+    assertEq(hook.asyncOrders(poolId, user, order.zeroForOne), order.amountIn);
     assertEq(hook.setExecutor(user, asyncFiller), true);
 
     balance0Before = currency0.balanceOf(user2);
@@ -95,19 +96,19 @@ contract AsyncCsmmTest is SetupHook {
     balance0After = currency0.balanceOf(user2);
     balance1After = currency1.balanceOf(user2);
 
-    if (zeroForOne) {
+    if (order.zeroForOne) {
       assertEq(balance0Before, balance0After);
-      assertEq(balance1Before - balance1After, amount);
-      assertEq(hook.asyncOrders(poolId, user, zeroForOne), 0);
+      assertEq(balance1Before - balance1After, order.amountIn);
+      assertEq(hook.asyncOrders(poolId, user, order.zeroForOne), 0);
     } else {
       assertEq(balance1Before, balance1After);
-      assertEq(balance0Before - balance0After, amount);
-      assertEq(hook.asyncOrders(poolId, user, zeroForOne), 0);
+      assertEq(balance0Before - balance0After, order.amountIn);
+      assertEq(hook.asyncOrders(poolId, user, order.zeroForOne), 0);
     }
-    if (zeroForOne) {
-      assertEq(manager.balanceOf(user, currency0.toId()), uint256(amount));
+    if (order.zeroForOne) {
+      assertEq(manager.balanceOf(user, currency0.toId()), uint256(order.amountIn));
     } else {
-      assertEq(manager.balanceOf(user, currency1.toId()), uint256(amount));
+      assertEq(manager.balanceOf(user, currency1.toId()), uint256(order.amountIn));
     }
   }
 
