@@ -40,9 +40,10 @@ interface IAsyncSwapOrder {
   function asyncOrder(PoolId poolId, address user, bool zeroForOne) external view returns (uint256 claimable);
 
   /// @notice Checks if the given executor is valid for the async order.
+  /// @param poolId The poolId the executor is interacting with.
   /// @param owner The async order owner be checked against.
   /// @param executor The address of the executor to be checked.
   /// @return isExecutor True if the executor is valid for the async order, false otherwise.
-  function isExecutor(address owner, address executor) external returns (bool);
+  function isExecutor(PoolId poolId, address owner, address executor) external returns (bool);
 
 }

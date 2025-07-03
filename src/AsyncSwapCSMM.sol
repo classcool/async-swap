@@ -26,13 +26,12 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
   using SafeCast for *;
   using CurrencySettler for Currency;
   using PoolIdLibrary for PoolKey;
+  using AsyncFiller for AsyncOrder;
 
-  /// @notice Algorithm used for ordering transactions in our Async Swap AMM.
-  IAlgorithm public algorithm;
   /// @notice Mapping to store async orders.
   mapping(PoolId poolId => AsyncFiller.State) public asyncOrders;
-  /// @notice Mapping to store executor permissions for users.
-  mapping(address owner => mapping(address executor => bool)) public setExecutor;
+  /// Ordering algortim
+  IAlgorithm public immutable algorithm;
 
   /// Event emitted when a swap is executed.
   /// @param id The poolId of the pool where the swap occurred.
@@ -63,6 +62,9 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
   /// @inheritdoc BaseHook
   function _beforeInitialize(address, PoolKey calldata key, uint160) internal virtual override returns (bytes4) {
     require(key.fee == LPFeeLibrary.DYNAMIC_FEE_FLAG, "Dude use dynamic fees flag");
+    /// set algorithm for the pool being initialized
+    asyncOrders[key.toId()].algorithm = algorithm;
+    asyncOrders[key.toId()].poolManager = poolManager;
     return this.beforeInitialize.selector;
   }
 
@@ -96,13 +98,14 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
     revert UnsupportedLiquidity();
   }
 
-  /// @inheritdoc IAsyncSwapOrder
-  function isExecutor(address owner, address executor) public view returns (bool) {
-    return setExecutor[owner][executor];
+  function asyncOrder(PoolId poolId, address user, bool zeroForOne) external view returns (uint256 claimable) {
+    AsyncFiller.State storage state = asyncOrders[poolId];
+    return state.asyncOrders[user][zeroForOne];
   }
 
-  function asyncOrder(PoolId poolId, address user, bool zeroForOne) external view returns (uint256 claimable) {
-    return asyncOrders[poolId].asyncOrders[user][zeroForOne];
+  function isExecutor(PoolId poolId, address user, address executor) external view returns (bool) {
+    AsyncFiller.State storage state = asyncOrders[poolId];
+    return state.setExecutor[user][executor];
   }
 
   function calculateHookFee(uint256) public pure returns (uint256) {
@@ -120,7 +123,7 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
     for (uint8 i = 0; i < orders.length; i++) {
       AsyncOrder calldata order = orders[i];
       // Use transaction ordering algorithm to ensure correct execution order
-      algorithm.orderingRule(order.zeroForOne, uint256(order.amountIn));
+      asyncOrders[order.key.toId()].algorithm.orderingRule(order.zeroForOne, uint256(order.amountIn));
       this.executeOrder(order, userParams);
     }
   }
@@ -138,10 +141,10 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
 
     /// TODO: Document what this does
     uint256 amountToFill = uint256(amountIn);
-    // AsyncFiller.State storage _asyncOrders = asyncOrders[poolId];
     uint256 claimableAmount = asyncOrders[poolId].asyncOrders[owner][zeroForOne];
     require(amountToFill <= claimableAmount, "Max fill order limit exceed");
-    require(isExecutor(owner, msg.sender), "Caller is valid not excutor");
+    AsyncFiller.State storage state = asyncOrders[poolId];
+    require(order.isExecutor(state, msg.sender), "Caller is valid not excutor");
 
     /// @dev Transfer currency of async order to user
     Currency currencyTake;
@@ -190,7 +193,7 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
     /// @dev Take pool fee for LP
     uint256 feeAmount = calculatePoolFee(key.fee, amountTaken);
     uint256 finalTaken = amountTaken - feeAmount;
-    setExecutor[hookData.user][hookData.executor] = true;
+    asyncOrders[poolId].setExecutor[hookData.user][hookData.executor] = true;
     emit AsyncSwapOrder(poolId, hookData.user, params.zeroForOne, finalTaken.toInt256());
 
     /// @dev Issue 1:1 claimableAmount - pool fee to user

@@ -43,6 +43,11 @@ library AsyncFiller {
   /// @notice Error thrown when an order is of zero amount.
   error ZeroFillOrder();
 
+  /// @notice Checks if the given executor is valid for the async order.
+  /// @param order The async order to be filled.
+  /// @param self The storage slot that controls the state of orders.
+  /// @param executor The address of the executor to be checked.
+  /// @return isExecutor True if the executor is valid for the async order, false otherwise.
   function isExecutor(AsyncOrder calldata order, State storage self, address executor) internal view returns (bool) {
     return self.setExecutor[order.owner][executor];
   }

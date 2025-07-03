@@ -15,6 +15,9 @@ contract Algorithm2Test is SetupHook {
     algorithm = hook.algorithm();
   }
 
+  /// this should test the intialized algoritm was selected
+  function testCheckSetAlgorithm() public { }
+
   function testExecuteOrderBuy() public {
     // Test setup for a buy order
     bool zeroForOne = true;
