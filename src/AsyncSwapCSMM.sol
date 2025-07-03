@@ -30,8 +30,7 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
   /// @notice Algorithm used for ordering transactions in our Async Swap AMM.
   IAlgorithm public algorithm;
   /// @notice Mapping to store async orders.
-  mapping(PoolId poolId => mapping(address user => mapping(bool zeroForOne => uint256 claimable))) public asyncOrders;
-  // mapping(PoolId poolId => AsyncFiller.State) public asyncOrders;
+  mapping(PoolId poolId => AsyncFiller.State) public asyncOrders;
   /// @notice Mapping to store executor permissions for users.
   mapping(address owner => mapping(address executor => bool)) public setExecutor;
 
@@ -102,6 +101,10 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
     return setExecutor[owner][executor];
   }
 
+  function asyncOrder(PoolId poolId, address user, bool zeroForOne) external view returns (uint256 claimable) {
+    return asyncOrders[poolId].asyncOrders[user][zeroForOne];
+  }
+
   function calculateHookFee(uint256) public pure returns (uint256) {
     return 0;
   }
@@ -136,7 +139,7 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
     /// TODO: Document what this does
     uint256 amountToFill = uint256(amountIn);
     // AsyncFiller.State storage _asyncOrders = asyncOrders[poolId];
-    uint256 claimableAmount = asyncOrders[poolId][owner][zeroForOne];
+    uint256 claimableAmount = asyncOrders[poolId].asyncOrders[owner][zeroForOne];
     require(amountToFill <= claimableAmount, "Max fill order limit exceed");
     require(isExecutor(owner, msg.sender), "Caller is valid not excutor");
 
@@ -151,7 +154,7 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
       currencyFill = currency0;
     }
 
-    asyncOrders[poolId][owner][zeroForOne] -= amountToFill;
+    asyncOrders[poolId].asyncOrders[owner][zeroForOne] -= amountToFill;
     /// TODO: check if this is needed, we could just burn
     poolManager.transfer(owner, currencyTake.toId(), amountToFill);
     emit AsyncOrderFilled(poolId, owner, zeroForOne, amountToFill);
@@ -192,8 +195,8 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
 
     /// @dev Issue 1:1 claimableAmount - pool fee to user
     /// @dev Add amount taken to previous claimableAmount
-    uint256 currClaimables = asyncOrders[poolId][hookData.user][params.zeroForOne];
-    asyncOrders[poolId][hookData.user][params.zeroForOne] = currClaimables + finalTaken;
+    uint256 currClaimables = asyncOrders[poolId].asyncOrders[hookData.user][params.zeroForOne];
+    asyncOrders[poolId].asyncOrders[hookData.user][params.zeroForOne] = currClaimables + finalTaken;
 
     /// @dev Hook event
     /// @reference
