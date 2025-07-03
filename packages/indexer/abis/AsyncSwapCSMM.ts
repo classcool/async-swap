@@ -436,7 +436,7 @@ export const AsyncSwapCSMMAbi = [
 	},
 	{
 		type: "function",
-		name: "asyncOrders",
+		name: "asyncOrder",
 		inputs: [
 			{
 				name: "poolId",
@@ -459,6 +459,30 @@ export const AsyncSwapCSMMAbi = [
 				name: "claimable",
 				type: "uint256",
 				internalType: "uint256",
+			},
+		],
+		stateMutability: "view",
+	},
+	{
+		type: "function",
+		name: "asyncOrders",
+		inputs: [
+			{
+				name: "poolId",
+				type: "bytes32",
+				internalType: "PoolId",
+			},
+		],
+		outputs: [
+			{
+				name: "poolManager",
+				type: "address",
+				internalType: "contract IPoolManager",
+			},
+			{
+				name: "algorithm",
+				type: "address",
+				internalType: "contract IAlgorithm",
 			},
 		],
 		stateMutability: "view",
@@ -1116,7 +1140,12 @@ export const AsyncSwapCSMMAbi = [
 		name: "isExecutor",
 		inputs: [
 			{
-				name: "owner",
+				name: "poolId",
+				type: "bytes32",
+				internalType: "PoolId",
+			},
+			{
+				name: "user",
 				type: "address",
 				internalType: "address",
 			},
@@ -1144,30 +1173,6 @@ export const AsyncSwapCSMMAbi = [
 				name: "",
 				type: "address",
 				internalType: "contract IPoolManager",
-			},
-		],
-		stateMutability: "view",
-	},
-	{
-		type: "function",
-		name: "setExecutor",
-		inputs: [
-			{
-				name: "owner",
-				type: "address",
-				internalType: "address",
-			},
-			{
-				name: "executor",
-				type: "address",
-				internalType: "address",
-			},
-		],
-		outputs: [
-			{
-				name: "",
-				type: "bool",
-				internalType: "bool",
 			},
 		],
 		stateMutability: "view",
