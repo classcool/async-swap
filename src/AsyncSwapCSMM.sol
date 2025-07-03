@@ -5,6 +5,7 @@ import { Algorithm2 } from "@async-swap/algorithms/algorithm-2.sol";
 import { IAlgorithm } from "@async-swap/interfaces/IAlgorithm.sol";
 import { IAsyncSwapAMM, IAsyncSwapOrder } from "@async-swap/interfaces/IAsyncSwapAMM.sol";
 import { IRouter } from "@async-swap/interfaces/IRouter.sol";
+import { AsyncFiller } from "@async-swap/libraries/AsyncFiller.sol";
 import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 import { CurrencySettler } from "@uniswap/v4-core/test/utils/CurrencySettler.sol";
 import { IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
@@ -29,7 +30,7 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
   /// @notice Algorithm used for ordering transactions in our Async Swap AMM.
   IAlgorithm public algorithm;
   /// @notice Mapping to store async orders.
-  mapping(PoolId poolId => mapping(address user => mapping(bool zeroForOne => uint256 claimable))) public asyncOrders;
+  mapping(PoolId poolId => AsyncFiller.State) public asyncOrders;
   /// @notice Mapping to store executor permissions for users.
   mapping(address owner => mapping(address executor => bool)) public setExecutor;
 
@@ -40,6 +41,7 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
   /// @param amount1 The amount of currency1 taken in the swap (negative for exact input).
   /// @param hookLPfeeAmount0 Fee amount taken for LP in currency0.
   /// @param hookLPfeeAmount1 Fee amount taken for LP in currency1.
+
   event HookSwap(
     bytes32 indexed id,
     address indexed sender,
@@ -77,7 +79,7 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
       afterSwap: false,
       beforeDonate: false,
       afterDonate: false,
-      beforeSwapReturnDelta: true, // allow beforeSwap to return a custom delta, for custom ordering
+      beforeSwapReturnDelta: true, // need must for async
       afterSwapReturnDelta: false,
       afterAddLiquidityReturnDelta: false,
       afterRemoveLiquidityReturnDelta: false
@@ -99,11 +101,17 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
     return setExecutor[owner][executor];
   }
 
+  function asyncOrder(PoolId poolId, address user, bool zeroForOne) external view returns (uint256 claimable) {
+    return asyncOrders[poolId].asyncOrders[user][zeroForOne];
+  }
+
   function calculateHookFee(uint256) public pure returns (uint256) {
     return 0;
   }
 
   function calculatePoolFee(uint24, uint256) public pure returns (uint256) {
+    /// TODO: check for dynamic fees
+    /// TODO: Read from the state slot
     return 0;
   }
 
@@ -128,8 +136,10 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
 
     if (amountIn == 0) revert ZeroFillOrder();
 
+    /// TODO: Document what this does
     uint256 amountToFill = uint256(amountIn);
-    uint256 claimableAmount = asyncOrders[poolId][owner][zeroForOne];
+    // AsyncFiller.State storage _asyncOrders = asyncOrders[poolId];
+    uint256 claimableAmount = asyncOrders[poolId].asyncOrders[owner][zeroForOne];
     require(amountToFill <= claimableAmount, "Max fill order limit exceed");
     require(isExecutor(owner, msg.sender), "Caller is valid not excutor");
 
@@ -144,7 +154,8 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
       currencyFill = currency0;
     }
 
-    asyncOrders[poolId][owner][zeroForOne] -= amountToFill;
+    asyncOrders[poolId].asyncOrders[owner][zeroForOne] -= amountToFill;
+    /// TODO: check if this is needed, we could just burn
     poolManager.transfer(owner, currencyTake.toId(), amountToFill);
     emit AsyncOrderFilled(poolId, owner, zeroForOne, amountToFill);
 
@@ -184,8 +195,8 @@ contract AsyncSwapCSMM is BaseHook, IAsyncSwapAMM {
 
     /// @dev Issue 1:1 claimableAmount - pool fee to user
     /// @dev Add amount taken to previous claimableAmount
-    uint256 currClaimables = asyncOrders[poolId][hookData.user][params.zeroForOne];
-    asyncOrders[poolId][hookData.user][params.zeroForOne] = currClaimables + finalTaken;
+    uint256 currClaimables = asyncOrders[poolId].asyncOrders[hookData.user][params.zeroForOne];
+    asyncOrders[poolId].asyncOrders[hookData.user][params.zeroForOne] = currClaimables + finalTaken;
 
     /// @dev Hook event
     /// @reference

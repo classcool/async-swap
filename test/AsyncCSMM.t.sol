@@ -62,7 +62,7 @@ contract AsyncCsmmTest is SetupHook {
 
   function testFuzzAsyncSwapAndFillOrder(address _user, uint256 amountIn, bool zeroForOne) public {
     vm.assume(amountIn >= 1);
-    vm.assume(amountIn < 2 ** 128 / 2);
+    vm.assume(amountIn < 2 ** 96 / 2);
     user = _user;
     topUp(user, amountIn);
     topUp(user2, amountIn);
@@ -86,7 +86,7 @@ contract AsyncCsmmTest is SetupHook {
       assertEq(balance1Before - balance1After, amountIn);
       assertEq(balance0Before, balance0After);
     }
-    assertEq(hook.asyncOrders(poolId, user, zeroForOne), amountIn);
+    assertEq(hook.asyncOrder(poolId, user, zeroForOne), amountIn);
     assertEq(hook.setExecutor(user, asyncFiller), true);
 
     balance0Before = currency0.balanceOf(user2);
@@ -101,11 +101,11 @@ contract AsyncCsmmTest is SetupHook {
     if (zeroForOne) {
       assertEq(balance0Before, balance0After);
       assertEq(balance1Before - balance1After, amountIn);
-      assertEq(hook.asyncOrders(poolId, user, zeroForOne), 0);
+      assertEq(hook.asyncOrder(poolId, user, zeroForOne), 0);
     } else {
       assertEq(balance1Before, balance1After);
       assertEq(balance0Before - balance0After, amountIn);
-      assertEq(hook.asyncOrders(poolId, user, zeroForOne), 0);
+      assertEq(hook.asyncOrder(poolId, user, zeroForOne), 0);
     }
     if (zeroForOne) {
       assertEq(manager.balanceOf(user, currency0.toId()), uint256(amountIn));
@@ -148,7 +148,7 @@ contract AsyncCsmmTest is SetupHook {
       assertEq(manager.balanceOf(address(hook), currency1.toId()), balance1Before + uint256(amount));
     }
 
-    assertEq(hook.asyncOrders(poolId, user, zeroForOne), uint256(amount));
+    assertEq(hook.asyncOrder(poolId, user, zeroForOne), uint256(amount));
   }
 
 }

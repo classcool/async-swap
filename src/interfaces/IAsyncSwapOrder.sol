@@ -37,7 +37,7 @@ interface IAsyncSwapOrder {
   /// @param zeroForOne Whether the order is for a swap from currency0 to currency1 (true) or currency1 to currency0
   /// (false).
   /// @return claimable The amount that can be claimed by the user.
-  function asyncOrders(PoolId poolId, address user, bool zeroForOne) external view returns (uint256 claimable);
+  function asyncOrder(PoolId poolId, address user, bool zeroForOne) external view returns (uint256 claimable);
 
   /// @notice Checks if the given executor is valid for the async order.
   /// @param owner The async order owner be checked against.

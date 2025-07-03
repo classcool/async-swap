@@ -26,7 +26,7 @@ library AsyncFiller {
   struct State {
     IPoolManager poolManager;
     IAlgorithm algorithm;
-    mapping(PoolId poolId => mapping(address user => mapping(bool zeroForOne => uint256 claimable))) asyncOrders;
+    mapping(address user => mapping(bool zeroForOne => uint256 claimable)) asyncOrders;
     mapping(address owner => mapping(address executor => bool)) setExecutor;
   }
 
@@ -43,7 +43,7 @@ library AsyncFiller {
   /// @notice Error thrown when an order is of zero amount.
   error ZeroFillOrder();
 
-  function isExecutor(AsyncOrder calldata order, State storage self, address executor) public view returns (bool) {
+  function isExecutor(AsyncOrder calldata order, State storage self, address executor) internal view returns (bool) {
     return self.setExecutor[order.owner][executor];
   }
 
@@ -62,12 +62,12 @@ library AsyncFiller {
   /// @notice Fill an async order in an Async Swap AMM.
   /// @param order The async order to be filled.
   /// @param self The state of the AsyncFiller library, containing async orders and executors.
-  function _execute(AsyncOrder calldata order, State storage self, bytes calldata) private {
+  function _execute(AsyncOrder calldata order, State storage self, bytes calldata) internal {
     if (order.amountIn == 0) revert ZeroFillOrder();
 
     PoolId poolId = order.key.toId();
     uint256 amountToFill = uint256(order.amountIn);
-    uint256 claimableAmount = self.asyncOrders[poolId][order.owner][order.zeroForOne];
+    uint256 claimableAmount = self.asyncOrders[order.owner][order.zeroForOne];
     require(amountToFill <= claimableAmount, "Max fill order limit exceed");
     require(isExecutor(order, self, msg.sender), "Caller is valid not excutor");
 
@@ -82,7 +82,7 @@ library AsyncFiller {
       currencyFill = order.key.currency0;
     }
 
-    self.asyncOrders[poolId][order.owner][order.zeroForOne] -= amountToFill;
+    self.asyncOrders[order.owner][order.zeroForOne] -= amountToFill;
     self.poolManager.transfer(order.owner, currencyTake.toId(), amountToFill);
     emit AsyncOrderFilled(poolId, order.owner, order.zeroForOne, amountToFill);
 
