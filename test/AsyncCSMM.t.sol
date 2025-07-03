@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import { SetupHook } from "./SetupHook.sol";
 import { AsyncSwapCSMM } from "@async-swap/AsyncSwapCSMM.sol";
 import { IRouter } from "@async-swap/interfaces/IRouter.sol";
+import { AsyncFiller } from "@async-swap/libraries/AsyncFiller.sol";
 import { AsyncOrder } from "@async-swap/types/AsyncOrder.sol";
 import { console } from "forge-std/Test.sol";
 import { Currency, IHooks, IPoolManager } from "v4-core/interfaces/IPoolManager.sol";
@@ -15,6 +16,7 @@ import { PoolKey } from "v4-core/types/PoolKey.sol";
 contract AsyncCsmmTest is SetupHook {
 
   using CurrencyLibrary for Currency;
+  using AsyncFiller for AsyncOrder;
 
   address asyncFiller = makeAddr("asyncFiller");
   address user = makeAddr("user");
@@ -62,7 +64,7 @@ contract AsyncCsmmTest is SetupHook {
 
   function testFuzzAsyncSwapAndFillOrder(address _user, uint256 amountIn, bool zeroForOne) public {
     vm.assume(amountIn >= 1);
-    vm.assume(amountIn < 2 ** 96 / 2);
+    vm.assume(amountIn < 2 ** 96);
     user = _user;
     topUp(user, amountIn);
     topUp(user2, amountIn);
@@ -87,7 +89,7 @@ contract AsyncCsmmTest is SetupHook {
       assertEq(balance0Before, balance0After);
     }
     assertEq(hook.asyncOrder(poolId, user, zeroForOne), amountIn);
-    assertEq(hook.setExecutor(user, asyncFiller), true);
+    assertEq(hook.isExecutor(poolId, user, asyncFiller), true);
 
     balance0Before = currency0.balanceOf(user2);
     balance1Before = currency1.balanceOf(user2);
