@@ -10,7 +10,7 @@ export const RouterAbi = [
 			{
 				name: "_hook",
 				type: "address",
-				internalType: "contract IAsyncCSMM",
+				internalType: "contract IAsyncSwapAMM",
 			},
 		],
 		stateMutability: "nonpayable",
@@ -22,7 +22,7 @@ export const RouterAbi = [
 			{
 				name: "order",
 				type: "tuple",
-				internalType: "struct IAsyncSwap.AsyncOrder",
+				internalType: "struct AsyncOrder",
 				components: [
 					{
 						name: "key",
@@ -94,7 +94,7 @@ export const RouterAbi = [
 			{
 				name: "order",
 				type: "tuple",
-				internalType: "struct IAsyncSwap.AsyncOrder",
+				internalType: "struct AsyncOrder",
 				components: [
 					{
 						name: "key",
