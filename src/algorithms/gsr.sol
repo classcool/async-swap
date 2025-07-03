@@ -8,7 +8,7 @@ import { IAlgorithm } from "@async-swap/interfaces/IAlgorithm.sol";
 /// @author Meek Msaki @ Async Labs
 /// @notice This contract implements the Greedy Sequencing Rule (GSR) for ordering transactions.
 /// The GSR algorithm is a transaction ordering rule that follows the following principles:
-/// 1. Start with any trade. Incase of GSRa, the first trade is the smallest trade.
+/// 1. Start with any trade. Incase of vhGSR, the first trade is the smallest trade.
 /// 2. If the price is above status-quo (overbought), pick a sell.
 /// 3. Otherwise, pick a buy.
 /// 4. Repeat 2-3 until all choices are exhausted.
